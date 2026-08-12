@@ -10,6 +10,7 @@ use App\Http\Controllers\Api\Academic\GradeController;
 use App\Http\Controllers\Api\Academic\AttendanceController;
 use App\Http\Controllers\Api\Academic\BehaviorLogController;
 use App\Http\Controllers\Api\Academic\RecommendationController;
+use App\Http\Controllers\Api\Academic\ProjectionController;
 use App\Http\Controllers\Api\Admin\RiskThresholdController;
 use App\Http\Controllers\Api\Admin\DashboardController;
 use App\Http\Controllers\Api\AlertController;
@@ -28,12 +29,14 @@ Route::middleware(['auth:sanctum'])->prefix('admin')->group(function () {
     Route::apiResource('users', UserController::class);
     Route::apiResource('risk-thresholds', RiskThresholdController::class);
     Route::get('dashboard/stats', [DashboardController::class, 'stats']);
+    Route::get('ml/metrics', [ProjectionController::class, 'metrics']);
 });
 
 Route::middleware(['auth:sanctum'])->prefix('academic')->group(function () {
     Route::apiResource('courses', CourseController::class);
     Route::apiResource('enrollments', EnrollmentController::class);
     Route::get('students/{student}/progress', [EnrollmentController::class, 'progress']);
+    Route::post('students/{student}/project', [ProjectionController::class, 'projectPerformance']);
 
     Route::apiResource('grades', GradeController::class);
     Route::apiResource('attendances', AttendanceController::class);

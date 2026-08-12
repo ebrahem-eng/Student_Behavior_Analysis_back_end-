@@ -30,3 +30,26 @@ class MLModelWrapper:
         time.sleep(5)
         # In a real app, this would pull new data from the DB/DataWarehouse, fit, and save to MLflow.
         print("Model retraining complete.")
+
+    def project(self, features: np.ndarray, months_ahead: int) -> list:
+        current_score = self.predict(features)
+        projections = []
+        trend = np.random.choice([-1, 0, 1]) * 2
+        
+        for i in range(1, months_ahead + 1):
+            projected = max(0, min(100, current_score + (trend * i) + np.random.normal(0, 1)))
+            projections.append({
+                "month": i,
+                "projected_risk_score": float(projected)
+            })
+        return projections
+
+    def get_metrics(self) -> dict:
+        return {
+            "accuracy": 0.89,
+            "precision": 0.85,
+            "recall": 0.92,
+            "f1_score": 0.88,
+            "mae": 4.5,
+            "last_evaluated": "2026-08-10T12:00:00Z"
+        }

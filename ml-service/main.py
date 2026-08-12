@@ -35,6 +35,18 @@ class PredictionResponse(BaseModel):
     risk_score: float
     risk_level: str
 
+class ProjectionRequest(BaseModel):
+    student_id: int
+    attendance_rate: float
+    average_grade: float
+    behavior_score: float
+    participation_rate: float
+    months_ahead: int = 6
+
+class ProjectionResponse(BaseModel):
+    student_id: int
+    projections: List[Dict[str, float]]
+
 class ExplanationResponse(BaseModel):
     student_id: int
     factors: Dict[str, float]
@@ -101,3 +113,13 @@ async def analyze_sentiment(data: SentimentRequest, api_key: str = Depends(get_a
 async def chat(data: ChatRequest, api_key: str = Depends(get_api_key)):
     response_text = nlp_model.chat_response(data.query, data.context)
     return ChatResponse(response=response_text)
+
+@app.post("/project", response_model=ProjectionResponse)
+async def project_performance(data: ProjectionRequest, api_key: str = Depends(get_api_key)):
+    features = np.array([[data.attendance_rate, data.average_grade, data.behavior_score, data.participation_rate]])
+    projections = ml_model.project(features, data.months_ahead)
+    return ProjectionResponse(student_id=data.student_id, projections=projections)
+
+@app.get("/metrics")
+async def get_metrics(api_key: str = Depends(get_api_key)):
+    return ml_model.get_metrics()

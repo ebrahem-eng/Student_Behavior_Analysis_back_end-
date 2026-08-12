@@ -81,4 +81,34 @@ class PredictionServiceClient
             return false;
         }
     }
+
+    public function projectPerformance(int $studentId, array $features, int $monthsAhead = 6)
+    {
+        $payload = array_merge(['student_id' => $studentId], $features, ['months_ahead' => $monthsAhead]);
+        
+        try {
+            $response = Http::withHeaders([
+                'X-API-Key' => $this->apiKey
+            ])->post("{$this->baseUrl}/project", $payload);
+
+            return $response->successful() ? $response->json() : null;
+        } catch (Exception $e) {
+            Log::error("Could not connect to Prediction service for projection: " . $e->getMessage());
+            return null;
+        }
+    }
+
+    public function getMetrics()
+    {
+        try {
+            $response = Http::withHeaders([
+                'X-API-Key' => $this->apiKey
+            ])->get("{$this->baseUrl}/metrics");
+
+            return $response->successful() ? $response->json() : null;
+        } catch (Exception $e) {
+            Log::error("Could not fetch ML metrics: " . $e->getMessage());
+            return null;
+        }
+    }
 }

@@ -1,8 +1,12 @@
-from fastapi import FastAPI, Depends, HTTPException, Security
+from fastapi import FastAPI, Depends, HTTPException, Security, BackgroundTasks
 from fastapi.security import APIKeyHeader
 from pydantic import BaseModel
+from typing import List, Dict, Any
+import numpy as np
+from model import MLModelWrapper
 
 app = FastAPI(title="SBA ML Service", version="1.0.0")
+ml_model = MLModelWrapper()
 
 # Internal Auth (Simple API Key for now)
 API_KEY = "internal_secret_key_for_sba"
@@ -17,10 +21,57 @@ class HealthResponse(BaseModel):
     status: str
     message: str
 
+class StudentFeatures(BaseModel):
+    student_id: int
+    attendance_rate: float
+    average_grade: float
+    behavior_score: float
+    participation_rate: float
+
+class PredictionResponse(BaseModel):
+    student_id: int
+    risk_score: float
+    risk_level: str
+
+class ExplanationResponse(BaseModel):
+    student_id: int
+    factors: Dict[str, float]
+
 @app.get("/health", response_model=HealthResponse)
 async def health_check():
     return {"status": "ok", "message": "ML Service is running"}
 
-@app.get("/secure-health", response_model=HealthResponse)
-async def secure_health_check(api_key: str = Depends(get_api_key)):
-    return {"status": "ok", "message": "Authenticated ML Service is running"}
+@app.post("/predict", response_model=PredictionResponse)
+async def predict_risk(data: StudentFeatures, api_key: str = Depends(get_api_key)):
+    features = np.array([[data.attendance_rate, data.average_grade, data.behavior_score, data.participation_rate]])
+    risk_score = ml_model.predict(features)
+    
+    level = "low"
+    if risk_score > 75:
+        level = "high"
+    elif risk_score > 40:
+        level = "medium"
+
+    return PredictionResponse(
+        student_id=data.student_id,
+        risk_score=float(risk_score),
+        risk_level=level
+    )
+
+@app.post("/explain", response_model=ExplanationResponse)
+async def explain_risk(data: StudentFeatures, api_key: str = Depends(get_api_key)):
+    features = np.array([[data.attendance_rate, data.average_grade, data.behavior_score, data.participation_rate]])
+    shap_values = ml_model.explain(features)
+    
+    feature_names = ["attendance_rate", "average_grade", "behavior_score", "participation_rate"]
+    factors = {name: float(val) for name, val in zip(feature_names, shap_values[0])}
+    
+    return ExplanationResponse(
+        student_id=data.student_id,
+        factors=factors
+    )
+
+@app.post("/retrain")
+async def retrain_model(background_tasks: BackgroundTasks, api_key: str = Depends(get_api_key)):
+    background_tasks.add_task(ml_model.retrain)
+    return {"status": "accepted", "message": "Retraining job started in background"}

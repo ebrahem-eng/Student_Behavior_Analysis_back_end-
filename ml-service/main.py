@@ -4,9 +4,11 @@ from pydantic import BaseModel
 from typing import List, Dict, Any
 import numpy as np
 from model import MLModelWrapper
+from nlp import NLPWrapper
 
 app = FastAPI(title="SBA ML Service", version="1.0.0")
 ml_model = MLModelWrapper()
+nlp_model = NLPWrapper()
 
 # Internal Auth (Simple API Key for now)
 API_KEY = "internal_secret_key_for_sba"
@@ -36,6 +38,20 @@ class PredictionResponse(BaseModel):
 class ExplanationResponse(BaseModel):
     student_id: int
     factors: Dict[str, float]
+
+class SentimentRequest(BaseModel):
+    text: str
+
+class SentimentResponse(BaseModel):
+    label: str
+    score: float
+
+class ChatRequest(BaseModel):
+    query: str
+    context: dict
+
+class ChatResponse(BaseModel):
+    response: str
 
 @app.get("/health", response_model=HealthResponse)
 async def health_check():
@@ -75,3 +91,13 @@ async def explain_risk(data: StudentFeatures, api_key: str = Depends(get_api_key
 async def retrain_model(background_tasks: BackgroundTasks, api_key: str = Depends(get_api_key)):
     background_tasks.add_task(ml_model.retrain)
     return {"status": "accepted", "message": "Retraining job started in background"}
+
+@app.post("/nlp/sentiment", response_model=SentimentResponse)
+async def analyze_sentiment(data: SentimentRequest, api_key: str = Depends(get_api_key)):
+    result = nlp_model.analyze_sentiment(data.text)
+    return SentimentResponse(**result)
+
+@app.post("/nlp/chatbot", response_model=ChatResponse)
+async def chat(data: ChatRequest, api_key: str = Depends(get_api_key)):
+    response_text = nlp_model.chat_response(data.query, data.context)
+    return ChatResponse(response=response_text)

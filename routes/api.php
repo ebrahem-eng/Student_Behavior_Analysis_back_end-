@@ -13,6 +13,7 @@ use App\Http\Controllers\Api\Academic\RecommendationController;
 use App\Http\Controllers\Api\Academic\ProjectionController;
 use App\Http\Controllers\Api\Admin\RiskThresholdController;
 use App\Http\Controllers\Api\Admin\DashboardController;
+use App\Http\Controllers\Api\Admin\ActivityLogController;
 use App\Http\Controllers\Api\AlertController;
 use App\Http\Controllers\Api\NotificationController;
 use App\Http\Controllers\Api\ConsentController;
@@ -44,6 +45,8 @@ Route::middleware(['auth:sanctum'])->prefix('admin')->group(function () {
     Route::apiResource('risk-thresholds', RiskThresholdController::class);
     Route::get('dashboard/stats', [DashboardController::class, 'stats']);
     Route::get('ml/metrics', [ProjectionController::class, 'metrics']);
+    Route::get('audit-logs', [ActivityLogController::class, 'index']);
+    Route::get('audit-logs/{activityLog}', [ActivityLogController::class, 'show']);
 });
 
 Route::middleware(['auth:sanctum'])->prefix('academic')->group(function () {

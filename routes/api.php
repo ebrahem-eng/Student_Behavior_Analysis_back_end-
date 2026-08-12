@@ -16,6 +16,7 @@ use App\Http\Controllers\Api\Admin\DashboardController;
 use App\Http\Controllers\Api\AlertController;
 use App\Http\Controllers\Api\NotificationController;
 use App\Http\Controllers\Api\ConsentController;
+use App\Http\Controllers\Api\Academic\ReportController;
 
 Route::middleware(['auth:sanctum'])->get('/user', function (Request $request) {
     return $request->user();
@@ -58,4 +59,13 @@ Route::middleware(['auth:sanctum'])->prefix('academic')->group(function () {
     Route::apiResource('recommendations', RecommendationController::class);
     Route::patch('recommendations/{recommendation}/approve', [RecommendationController::class, 'approve']);
     Route::patch('recommendations/{recommendation}/implement', [RecommendationController::class, 'logImplementation']);
+});
+
+Route::middleware(['auth:sanctum'])->prefix('reports')->group(function () {
+    Route::get('grades', [ReportController::class, 'exportGrades']);
+    Route::get('attendance', [ReportController::class, 'exportAttendance']);
+    Route::get('students/{student}/risk-profile', [ReportController::class, 'exportStudentRiskProfile']);
+    Route::get('scheduled', [ReportController::class, 'listScheduled']);
+    Route::post('schedule', [ReportController::class, 'schedule']);
+    Route::delete('scheduled/{scheduledReport}', [ReportController::class, 'deleteScheduled']);
 });

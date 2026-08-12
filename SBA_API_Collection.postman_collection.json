@@ -1,8 +1,690 @@
 {
 	"info": {
-		"_postman_id": "454477d9-3f0e-47c3-b467-33d31d9d4869",
-		"name": "SBA (Student Behavior Analysis) API",
+		"_postman_id": "sba-complete-api-v1",
+		"name": "Student Behavior Analysis (SBA) - Complete API Collection",
+		"description": "Comprehensive API collection for Student Behavior Analysis system covering all 12 modules.",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
-	"item": []
+	"auth": {
+		"type": "bearer",
+		"bearer": [
+			{
+				"key": "token",
+				"value": "{{bearer_token}}",
+				"type": "string"
+			}
+		]
+	},
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://127.0.0.1:8000/api",
+			"type": "string"
+		},
+		{
+			"key": "ml_service_url",
+			"value": "http://127.0.0.1:8001",
+			"type": "string"
+		},
+		{
+			"key": "bearer_token",
+			"value": "YOUR_SANCTUM_TOKEN",
+			"type": "string"
+		},
+		{
+			"key": "ml_api_key",
+			"value": "internal_secret_key_for_sba",
+			"type": "string"
+		}
+	],
+	"item": [
+		{
+			"name": "01. Auth & Current User",
+			"item": [
+				{
+					"name": "Get Authenticated User",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/user",
+							"host": ["{{base_url}}"],
+							"path": ["user"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "02. Admin - Institutions",
+			"item": [
+				{
+					"name": "List Institutions",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{base_url}}/admin/institutions",
+							"host": ["{{base_url}}"],
+							"path": ["admin", "institutions"]
+						}
+					}
+				},
+				{
+					"name": "Create Institution",
+					"request": {
+						"method": "POST",
+						"header": [{"key": "Content-Type", "value": "application/json"}],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Al-Hikma University\",\n    \"type\": \"university\",\n    \"address\": \"Damascus, Syria\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/admin/institutions",
+							"host": ["{{base_url}}"],
+							"path": ["admin", "institutions"]
+						}
+					}
+				},
+				{
+					"name": "Get Institution Details",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{base_url}}/admin/institutions/1",
+							"host": ["{{base_url}}"],
+							"path": ["admin", "institutions", "1"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "03. Admin - Users & Roles",
+			"item": [
+				{
+					"name": "List Users",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{base_url}}/admin/users",
+							"host": ["{{base_url}}"],
+							"path": ["admin", "users"]
+						}
+					}
+				},
+				{
+					"name": "Create User",
+					"request": {
+						"method": "POST",
+						"header": [{"key": "Content-Type", "value": "application/json"}],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"John Doe\",\n    \"email\": \"john@example.com\",\n    \"password\": \"password123\",\n    \"role\": \"Student\",\n    \"institution_id\": 1\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/admin/users",
+							"host": ["{{base_url}}"],
+							"path": ["admin", "users"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "04. Academic Structure",
+			"item": [
+				{
+					"name": "List Courses",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{base_url}}/academic/courses",
+							"host": ["{{base_url}}"],
+							"path": ["academic", "courses"]
+						}
+					}
+				},
+				{
+					"name": "Create Course",
+					"request": {
+						"method": "POST",
+						"header": [{"key": "Content-Type", "value": "application/json"}],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"institution_id\": 1,\n    \"name\": \"Data Science 101\",\n    \"code\": \"CS101\",\n    \"credits\": 3\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/academic/courses",
+							"host": ["{{base_url}}"],
+							"path": ["academic", "courses"]
+						}
+					}
+				},
+				{
+					"name": "List Enrollments",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{base_url}}/academic/enrollments",
+							"host": ["{{base_url}}"],
+							"path": ["academic", "enrollments"]
+						}
+					}
+				},
+				{
+					"name": "Get Student Progress",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{base_url}}/academic/students/1/progress",
+							"host": ["{{base_url}}"],
+							"path": ["academic", "students", "1", "progress"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "05. Academic Data Ingestion",
+			"item": [
+				{
+					"name": "List Grades",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{base_url}}/academic/grades",
+							"host": ["{{base_url}}"],
+							"path": ["academic", "grades"]
+						}
+					}
+				},
+				{
+					"name": "Record Grade",
+					"request": {
+						"method": "POST",
+						"header": [{"key": "Content-Type", "value": "application/json"}],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"enrollment_id\": 1,\n    \"exam_name\": \"Midterm Exam\",\n    \"score\": 85.5,\n    \"weight\": 0.3\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/academic/grades",
+							"host": ["{{base_url}}"],
+							"path": ["academic", "grades"]
+						}
+					}
+				},
+				{
+					"name": "Record Attendance",
+					"request": {
+						"method": "POST",
+						"header": [{"key": "Content-Type", "value": "application/json"}],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"user_id\": 1,\n    \"section_id\": 1,\n    \"date\": \"2026-08-12\",\n    \"status\": \"present\",\n    \"notes\": \"Active in classroom\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/academic/attendances",
+							"host": ["{{base_url}}"],
+							"path": ["academic", "attendances"]
+						}
+					}
+				},
+				{
+					"name": "Record Behavior Log",
+					"request": {
+						"method": "POST",
+						"header": [{"key": "Content-Type", "value": "application/json"}],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"user_id\": 1,\n    \"reporter_id\": 2,\n    \"type\": \"positive\",\n    \"description\": \"Helped peers understand difficult concepts.\",\n    \"date\": \"2026-08-12\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/academic/behavior-logs",
+							"host": ["{{base_url}}"],
+							"path": ["academic", "behavior-logs"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "06. Risk Engine & Alerts",
+			"item": [
+				{
+					"name": "Admin Dashboard Stats",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{base_url}}/admin/dashboard/stats",
+							"host": ["{{base_url}}"],
+							"path": ["admin", "dashboard", "stats"]
+						}
+					}
+				},
+				{
+					"name": "Configure Risk Threshold",
+					"request": {
+						"method": "POST",
+						"header": [{"key": "Content-Type", "value": "application/json"}],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"institution_id\": 1,\n    \"level\": \"high\",\n    \"min_score\": 75.0,\n    \"max_score\": 100.0,\n    \"requires_action\": true\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/admin/risk-thresholds",
+							"host": ["{{base_url}}"],
+							"path": ["admin", "risk-thresholds"]
+						}
+					}
+				},
+				{
+					"name": "Get User Alerts",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{base_url}}/alerts",
+							"host": ["{{base_url}}"],
+							"path": ["alerts"]
+						}
+					}
+				},
+				{
+					"name": "Mark Alert as Read",
+					"request": {
+						"method": "PATCH",
+						"url": {
+							"raw": "{{base_url}}/alerts/1/read",
+							"host": ["{{base_url}}"],
+							"path": ["alerts", "1", "read"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "07. Python ML Service",
+			"item": [
+				{
+					"name": "Health Check",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{ml_service_url}}/health",
+							"host": ["{{ml_service_url}}"],
+							"path": ["health"]
+						}
+					}
+				},
+				{
+					"name": "Predict Student Risk",
+					"request": {
+						"method": "POST",
+						"header": [
+							{"key": "Content-Type", "value": "application/json"},
+							{"key": "X-API-Key", "value": "{{ml_api_key}}"}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"student_id\": 1,\n    \"attendance_rate\": 65.0,\n    \"average_grade\": 58.0,\n    \"behavior_score\": 50.0,\n    \"participation_rate\": 40.0\n}"
+						},
+						"url": {
+							"raw": "{{ml_service_url}}/predict",
+							"host": ["{{ml_service_url}}"],
+							"path": ["predict"]
+						}
+					}
+				},
+				{
+					"name": "Explain Risk (SHAP)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{"key": "Content-Type", "value": "application/json"},
+							{"key": "X-API-Key", "value": "{{ml_api_key}}"}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"student_id\": 1,\n    \"attendance_rate\": 65.0,\n    \"average_grade\": 58.0,\n    \"behavior_score\": 50.0,\n    \"participation_rate\": 40.0\n}"
+						},
+						"url": {
+							"raw": "{{ml_service_url}}/explain",
+							"host": ["{{ml_service_url}}"],
+							"path": ["explain"]
+						}
+					}
+				},
+				{
+					"name": "Trigger Retraining",
+					"request": {
+						"method": "POST",
+						"header": [
+							{"key": "X-API-Key", "value": "{{ml_api_key}}"}
+						],
+						"url": {
+							"raw": "{{ml_service_url}}/retrain",
+							"host": ["{{ml_service_url}}"],
+							"path": ["retrain"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "08. Recommendations & Interventions",
+			"item": [
+				{
+					"name": "List Recommendations",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{base_url}}/academic/recommendations",
+							"host": ["{{base_url}}"],
+							"path": ["academic", "recommendations"]
+						}
+					}
+				},
+				{
+					"name": "Propose Recommendation",
+					"request": {
+						"method": "POST",
+						"header": [{"key": "Content-Type", "value": "application/json"}],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"student_id\": 1,\n    \"ai_suggested_action\": \"Assign 1-on-1 tutoring in Mathematics and monitor weekly attendance.\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/academic/recommendations",
+							"host": ["{{base_url}}"],
+							"path": ["academic", "recommendations"]
+						}
+					}
+				},
+				{
+					"name": "Approve Recommendation",
+					"request": {
+						"method": "PATCH",
+						"url": {
+							"raw": "{{base_url}}/academic/recommendations/1/approve",
+							"host": ["{{base_url}}"],
+							"path": ["academic", "recommendations", "1", "approve"]
+						}
+					}
+				},
+				{
+					"name": "Log Implementation Outcome",
+					"request": {
+						"method": "PATCH",
+						"header": [{"key": "Content-Type", "value": "application/json"}],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"outcome_notes\": \"Completed 4 tutoring sessions. Student improved midterm score to 78%.\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/academic/recommendations/1/implement",
+							"host": ["{{base_url}}"],
+							"path": ["academic", "recommendations", "1", "implement"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "09. NLP & Sentiment Analysis",
+			"item": [
+				{
+					"name": "Analyze Text Sentiment",
+					"request": {
+						"method": "POST",
+						"header": [
+							{"key": "Content-Type", "value": "application/json"},
+							{"key": "X-API-Key", "value": "{{ml_api_key}}"}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"text\": \"Student seems very stressed and overwhelmed by upcoming project deadlines.\"\n}"
+						},
+						"url": {
+							"raw": "{{ml_service_url}}/nlp/sentiment",
+							"host": ["{{ml_service_url}}"],
+							"path": ["nlp", "sentiment"]
+						}
+					}
+				},
+				{
+					"name": "Chatbot Q&A",
+					"request": {
+						"method": "POST",
+						"header": [
+							{"key": "Content-Type", "value": "application/json"},
+							{"key": "X-API-Key", "value": "{{ml_api_key}}"}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"query\": \"What is the risk assessment for this student?\",\n    \"context\": {\n        \"student_id\": 1,\n        \"risk_level\": \"high\"\n    }\n}"
+						},
+						"url": {
+							"raw": "{{ml_service_url}}/nlp/chatbot",
+							"host": ["{{ml_service_url}}"],
+							"path": ["nlp", "chatbot"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "10. Projections & Accuracy",
+			"item": [
+				{
+					"name": "Project Future Performance",
+					"request": {
+						"method": "POST",
+						"header": [{"key": "Content-Type", "value": "application/json"}],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"attendance_rate\": 70.0,\n    \"average_grade\": 65.0,\n    \"behavior_score\": 60.0,\n    \"participation_rate\": 55.0,\n    \"months_ahead\": 6\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/academic/students/1/project",
+							"host": ["{{base_url}}"],
+							"path": ["academic", "students", "1", "project"]
+						}
+					}
+				},
+				{
+					"name": "Get ML Model Metrics",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{base_url}}/admin/ml/metrics",
+							"host": ["{{base_url}}"],
+							"path": ["admin", "ml", "metrics"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "11. Notifications & Consent",
+			"item": [
+				{
+					"name": "Get User Notifications",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{base_url}}/notifications?unread_only=false",
+							"host": ["{{base_url}}"],
+							"path": ["notifications"],
+							"query": [{"key": "unread_only", "value": "false"}]
+						}
+					}
+				},
+				{
+					"name": "Mark All Notifications as Read",
+					"request": {
+						"method": "POST",
+						"url": {
+							"raw": "{{base_url}}/notifications/read-all",
+							"host": ["{{base_url}}"],
+							"path": ["notifications", "read-all"]
+						}
+					}
+				},
+				{
+					"name": "Grant Data Consent",
+					"request": {
+						"method": "POST",
+						"header": [{"key": "Content-Type", "value": "application/json"}],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"consent_type\": \"ai_data_processing\",\n    \"is_granted\": true\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/consent",
+							"host": ["{{base_url}}"],
+							"path": ["consent"]
+						}
+					}
+				},
+				{
+					"name": "Check Consent Status",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{base_url}}/consent/check/ai_data_processing",
+							"host": ["{{base_url}}"],
+							"path": ["consent", "check", "ai_data_processing"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "12. Reporting & Exports",
+			"item": [
+				{
+					"name": "Export Grades (JSON / CSV)",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{base_url}}/reports/grades?format=json",
+							"host": ["{{base_url}}"],
+							"path": ["reports", "grades"],
+							"query": [{"key": "format", "value": "json"}]
+						}
+					}
+				},
+				{
+					"name": "Export Attendance (JSON / CSV)",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{base_url}}/reports/attendance?format=csv",
+							"host": ["{{base_url}}"],
+							"path": ["reports", "attendance"],
+							"query": [{"key": "format", "value": "csv"}]
+						}
+					}
+				},
+				{
+					"name": "Export Student Risk Profile",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{base_url}}/reports/students/1/risk-profile?format=json",
+							"host": ["{{base_url}}"],
+							"path": ["reports", "students", "1", "risk-profile"],
+							"query": [{"key": "format", "value": "json"}]
+						}
+					}
+				},
+				{
+					"name": "Schedule Automated Report",
+					"request": {
+						"method": "POST",
+						"header": [{"key": "Content-Type", "value": "application/json"}],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"report_type\": \"risk_profiles\",\n    \"frequency\": \"weekly\",\n    \"recipients\": [\"admin@example.com\", \"advisor@example.com\"]\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/reports/schedule",
+							"host": ["{{base_url}}"],
+							"path": ["reports", "schedule"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "13. Audit & Security Logs",
+			"item": [
+				{
+					"name": "List Audit Logs",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{base_url}}/admin/audit-logs",
+							"host": ["{{base_url}}"],
+							"path": ["admin", "audit-logs"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "14. API Keys Management",
+			"item": [
+				{
+					"name": "List API Keys",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{base_url}}/admin/api-keys",
+							"host": ["{{base_url}}"],
+							"path": ["admin", "api-keys"]
+						}
+					}
+				},
+				{
+					"name": "Generate API Key",
+					"request": {
+						"method": "POST",
+						"header": [{"key": "Content-Type", "value": "application/json"}],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"LMS Integration Key\",\n    \"abilities\": [\"read:grades\", \"write:attendance\"],\n    \"rate_limit\": 120\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/admin/api-keys",
+							"host": ["{{base_url}}"],
+							"path": ["admin", "api-keys"]
+						}
+					}
+				},
+				{
+					"name": "Toggle API Key Status",
+					"request": {
+						"method": "PATCH",
+						"url": {
+							"raw": "{{base_url}}/admin/api-keys/1/toggle",
+							"host": ["{{base_url}}"],
+							"path": ["admin", "api-keys", "1", "toggle"]
+						}
+					}
+				},
+				{
+					"name": "Revoke API Key",
+					"request": {
+						"method": "DELETE",
+						"url": {
+							"raw": "{{base_url}}/admin/api-keys/1",
+							"host": ["{{base_url}}"],
+							"path": ["admin", "api-keys", "1"]
+						}
+					}
+				}
+			]
+		}
+	]
 }

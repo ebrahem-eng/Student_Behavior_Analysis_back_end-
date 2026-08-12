@@ -9,6 +9,7 @@ use App\Http\Controllers\Api\Academic\EnrollmentController;
 use App\Http\Controllers\Api\Academic\GradeController;
 use App\Http\Controllers\Api\Academic\AttendanceController;
 use App\Http\Controllers\Api\Academic\BehaviorLogController;
+use App\Http\Controllers\Api\Academic\RecommendationController;
 use App\Http\Controllers\Api\Admin\RiskThresholdController;
 use App\Http\Controllers\Api\Admin\DashboardController;
 use App\Http\Controllers\Api\AlertController;
@@ -37,4 +38,8 @@ Route::middleware(['auth:sanctum'])->prefix('academic')->group(function () {
     Route::apiResource('grades', GradeController::class);
     Route::apiResource('attendances', AttendanceController::class);
     Route::apiResource('behavior-logs', BehaviorLogController::class);
+    
+    Route::apiResource('recommendations', RecommendationController::class);
+    Route::patch('recommendations/{recommendation}/approve', [RecommendationController::class, 'approve']);
+    Route::patch('recommendations/{recommendation}/implement', [RecommendationController::class, 'logImplementation']);
 });

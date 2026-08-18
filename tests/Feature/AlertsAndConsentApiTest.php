@@ -35,6 +35,35 @@ class AlertsAndConsentApiTest extends TestCase
             ->assertJsonPath('data.is_read', true);
     }
 
+    public function test_can_mark_all_alerts_as_read()
+    {
+        $student = User::factory()->create();
+        $recipient = User::factory()->create();
+        Sanctum::actingAs($recipient);
+
+        Alert::create([
+            'student_id' => $student->id,
+            'recipient_id' => $recipient->id,
+            'level' => 'high',
+            'message' => 'Alert 1',
+            'is_read' => false,
+        ]);
+
+        Alert::create([
+            'student_id' => $student->id,
+            'recipient_id' => $recipient->id,
+            'level' => 'medium',
+            'message' => 'Alert 2',
+            'is_read' => false,
+        ]);
+
+        $response = $this->postJson('/api/alerts/read-all');
+        $response->assertStatus(200)
+            ->assertJsonPath('message', 'All alerts marked as read.');
+
+        $this->assertEquals(0, Alert::where('recipient_id', $recipient->id)->where('is_read', false)->count());
+    }
+
     public function test_can_grant_and_check_consent()
     {
         $user = User::factory()->create();

@@ -41,6 +41,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
 
     Route::get('alerts', [AlertController::class, 'index']);
     Route::patch('alerts/{alert}/read', [AlertController::class, 'markAsRead']);
+    Route::post('alerts/read-all', [AlertController::class, 'markAllAsRead']);
 
     // Notifications
     Route::get('notifications', [NotificationController::class, 'index']);

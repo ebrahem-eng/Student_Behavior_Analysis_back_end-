@@ -434,6 +434,17 @@
 							"path": ["alerts", "1", "read"]
 						}
 					}
+				},
+				{
+					"name": "Mark All Alerts as Read",
+					"request": {
+						"method": "POST",
+						"url": {
+							"raw": "{{base_url}}/alerts/read-all",
+							"host": ["{{base_url}}"],
+							"path": ["alerts", "read-all"]
+						}
+					}
 				}
 			]
 		},

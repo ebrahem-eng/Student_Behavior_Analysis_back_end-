@@ -19,12 +19,23 @@ use App\Http\Controllers\Api\AlertController;
 use App\Http\Controllers\Api\NotificationController;
 use App\Http\Controllers\Api\ConsentController;
 use App\Http\Controllers\Api\Academic\ReportController;
+use App\Http\Controllers\Api\Auth\AuthController;
 
-Route::middleware(['auth:sanctum'])->get('/user', function (Request $request) {
-    return $request->user();
+// Public Auth Routes
+Route::prefix('auth')->group(function () {
+    Route::post('login', [AuthController::class, 'login']);
 });
 
 Route::middleware(['auth:sanctum'])->group(function () {
+    Route::get('/user', function (Request $request) {
+        return $request->user();
+    });
+
+    Route::prefix('auth')->group(function () {
+        Route::get('me', [AuthController::class, 'me']);
+        Route::post('logout', [AuthController::class, 'logout']);
+    });
+
     Route::get('alerts', [AlertController::class, 'index']);
     Route::patch('alerts/{alert}/read', [AlertController::class, 'markAsRead']);
 

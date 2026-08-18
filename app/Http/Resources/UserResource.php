@@ -13,9 +13,13 @@ class UserResource extends JsonResource
             'id' => $this->id,
             'name' => $this->name,
             'email' => $this->email,
-            'roles' => $this->whenLoaded('roles', function () {
-                return $this->roles->pluck('name');
-            }),
+            'institution_id' => $this->institution_id,
+            'institution' => new InstitutionResource($this->whenLoaded('institution')),
+            'phone' => $this->phone,
+            'national_id' => $this->national_id,
+            'roles' => $this->relationLoaded('roles') 
+                ? $this->roles->pluck('name') 
+                : $this->getRoleNames(),
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
         ];

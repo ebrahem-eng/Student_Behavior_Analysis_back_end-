@@ -20,6 +20,7 @@ use App\Http\Controllers\Api\NotificationController;
 use App\Http\Controllers\Api\ConsentController;
 use App\Http\Controllers\Api\Academic\ReportController;
 use App\Http\Controllers\Api\Auth\AuthController;
+use App\Http\Resources\UserResource;
 
 // Public Auth Routes
 Route::prefix('auth')->group(function () {
@@ -28,7 +29,7 @@ Route::prefix('auth')->group(function () {
 
 Route::middleware(['auth:sanctum'])->group(function () {
     Route::get('/user', function (Request $request) {
-        return $request->user();
+        return new UserResource($request->user()->load(['roles', 'institution']));
     });
 
     Route::prefix('auth')->group(function () {

@@ -22,7 +22,7 @@ class AuthController extends Controller
             'device_name' => 'nullable|string',
         ]);
 
-        $user = User::where('email', $request->email)->first();
+        $user = User::with(['roles', 'institution'])->where('email', $request->email)->first();
 
         if (!$user || !Hash::check($request->password, $user->password)) {
             throw ValidationException::withMessages([
@@ -54,10 +54,11 @@ class AuthController extends Controller
     }
 
     /**
-     * Get authenticated user profile.
+     * Get authenticated user profile using UserResource.
      */
     public function me(Request $request)
     {
-        return new UserResource($request->user()->load(['roles', 'institution']));
+        $user = $request->user()->load(['roles', 'institution']);
+        return new UserResource($user);
     }
 }

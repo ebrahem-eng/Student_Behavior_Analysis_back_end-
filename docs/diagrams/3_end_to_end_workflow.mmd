@@ -1,0 +1,34 @@
+sequenceDiagram
+    autonumber
+    actor Teacher as 👨‍🏫 Teacher
+    actor Student as 🎓 Student
+    participant Laravel as ⚙️ Laravel API & MySQL
+    participant AI as 🧠 Python AI / ML Service
+    participant Reverb as 📡 Reverb WebSockets
+    actor Advisor as 🛡️ Academic Advisor
+    actor Parent as 👨‍👩‍👧 Parent / Guardian
+
+    %% Phase 1: Data Ingestion
+    Teacher->>Laravel: POST /academic/attendances (Logs absence/lateness)
+    Teacher->>Laravel: POST /academic/grades (Submits midterm scores)
+    Student->>Laravel: POST /consent (Submits wellbeing survey)
+
+    %% Phase 2: Feature Pipeline & ML Analysis
+    Laravel->>AI: POST /predict & /explain (Sends normalized features)
+    AI-->>Laravel: Returns Risk Score (e.g. 88%), Tier (High), SHAP Factors
+
+    %% Phase 3: Alert Generation & Fanout
+    Laravel->>Laravel: Evaluates Risk vs Institution Threshold
+    Laravel->>Reverb: Broadcasts .new_alert on private channels
+    Reverb-->>Advisor: 🔔 Live At-Risk Notification on Dashboard
+    Reverb-->>Parent: 📲 SMS / Push Notification: Grade/Attendance Alert
+
+    %% Phase 4: Advisor Intervention
+    Advisor->>Laravel: GET /academic/students/360 (Views SHAP Factors)
+    Advisor->>Laravel: POST /academic/recommendations (Schedules Tutoring)
+    Laravel-->>Student: 📅 Adds Tutoring Milestone to Student Dashboard
+    Laravel-->>Parent: ✉️ Dispatches Action Plan to Parent Portal
+
+    %% Phase 5: Outcome & Retraining
+    Teacher->>Laravel: POST /academic/grades (Post-intervention score logged)
+    Laravel->>AI: POST /retrain (Updates model weights with outcome success)

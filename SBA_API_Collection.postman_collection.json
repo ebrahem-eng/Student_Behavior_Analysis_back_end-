@@ -122,6 +122,56 @@
 					}
 				},
 				{
+					"name": "Update Profile (/auth/profile)",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"System Administrator\",\n    \"email\": \"admin@sba.local\",\n    \"phone\": \"+963991234567\",\n    \"avatar_url\": \"https://images.unsplash.com/photo-1534528741775-53994a69daeb\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/auth/profile",
+							"host": ["{{base_url}}"],
+							"path": ["auth", "profile"]
+						}
+					}
+				},
+				{
+					"name": "Update Password (/auth/password)",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"current_password\": \"password\",\n    \"password\": \"NewSecurePass!2026\",\n    \"password_confirmation\": \"NewSecurePass!2026\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/auth/password",
+							"host": ["{{base_url}}"],
+							"path": ["auth", "password"]
+						}
+					}
+				},
+				{
 					"name": "User Logout",
 					"request": {
 						"method": "POST",

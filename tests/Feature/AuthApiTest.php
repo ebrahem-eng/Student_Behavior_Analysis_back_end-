@@ -62,4 +62,48 @@ class AuthApiTest extends TestCase
         $logoutResponse->assertStatus(200)
             ->assertJsonPath('message', 'Successfully logged out');
     }
+
+    public function test_authenticated_user_can_update_profile()
+    {
+        $user = User::factory()->create([
+            'name' => 'Original Name',
+            'email' => 'original@sba.local',
+        ]);
+        Sanctum::actingAs($user);
+
+        $response = $this->putJson('/api/auth/profile', [
+            'name' => 'Updated Name',
+            'email' => 'updated@sba.local',
+            'phone' => '+963999888777',
+            'avatar_url' => 'https://example.com/avatar.jpg',
+        ]);
+
+        $response->assertStatus(200)
+            ->assertJsonPath('user.name', 'Updated Name')
+            ->assertJsonPath('user.email', 'updated@sba.local')
+            ->assertJsonPath('user.avatar_url', 'https://example.com/avatar.jpg');
+
+        $this->assertDatabaseHas('users', [
+            'id' => $user->id,
+            'name' => 'Updated Name',
+            'email' => 'updated@sba.local',
+        ]);
+    }
+
+    public function test_authenticated_user_can_update_password()
+    {
+        $user = User::factory()->create([
+            'password' => Hash::make('oldpassword123'),
+        ]);
+        Sanctum::actingAs($user);
+
+        $response = $this->putJson('/api/auth/password', [
+            'current_password' => 'oldpassword123',
+            'password' => 'NewPassword!123',
+            'password_confirmation' => 'NewPassword!123',
+        ]);
+
+        $response->assertStatus(200)
+            ->assertJsonPath('message', 'Password updated successfully');
+    }
 }

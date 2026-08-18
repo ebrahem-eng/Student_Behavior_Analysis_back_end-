@@ -22,6 +22,7 @@ class User extends Authenticatable
         'institution_id',
         'phone',
         'national_id',
+        'avatar_url',
     ];
 
     protected $hidden = [

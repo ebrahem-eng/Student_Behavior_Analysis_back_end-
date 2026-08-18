@@ -17,9 +17,13 @@ class UserResource extends JsonResource
             'institution' => new InstitutionResource($this->whenLoaded('institution')),
             'phone' => $this->phone,
             'national_id' => $this->national_id,
+            'avatar_url' => $this->avatar_url,
             'roles' => $this->relationLoaded('roles') 
                 ? $this->roles->pluck('name') 
                 : $this->getRoleNames(),
+            'role' => $this->relationLoaded('roles') && $this->roles->isNotEmpty()
+                ? strtolower($this->roles->first()->name)
+                : (strtolower($this->getRoleNames()->first() ?? 'admin')),
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
         ];

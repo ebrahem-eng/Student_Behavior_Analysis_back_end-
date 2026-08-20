@@ -11,9 +11,16 @@ use Illuminate\Validation\Rules;
 
 class UserController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        return UserResource::collection(User::with('roles')->get());
+        $query = User::with(['roles', 'institution']);
+        if ($request->filled('role')) {
+            $roleName = $request->input('role');
+            $query->whereHas('roles', function ($q) use ($roleName) {
+                $q->where('name', 'like', $roleName);
+            });
+        }
+        return UserResource::collection($query->get());
     }
 
     public function store(Request $request)

@@ -3,6 +3,7 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\Admin\InstitutionController;
+use App\Http\Controllers\Api\Admin\CollegeController;
 use App\Http\Controllers\Api\Admin\UserController;
 use App\Http\Controllers\Api\Academic\CourseController;
 use App\Http\Controllers\Api\Academic\EnrollmentController;
@@ -31,7 +32,7 @@ Route::prefix('auth')->group(function () {
 
 Route::middleware(['auth:sanctum'])->group(function () {
     Route::get('/user', function (Request $request) {
-        return new UserResource($request->user()->load(['roles', 'institution']));
+        return new UserResource($request->user()->load(['roles', 'institution', 'college']));
     });
 
     Route::prefix('auth')->group(function () {
@@ -67,6 +68,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
 
 Route::middleware(['auth:sanctum'])->prefix('admin')->group(function () {
     Route::apiResource('institutions', InstitutionController::class);
+    Route::apiResource('colleges', CollegeController::class);
     Route::apiResource('users', UserController::class);
     Route::apiResource('risk-thresholds', RiskThresholdController::class);
     Route::get('dashboard/stats', [DashboardController::class, 'stats']);

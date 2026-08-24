@@ -15,6 +15,8 @@ class UserResource extends JsonResource
             'email' => $this->email,
             'institution_id' => $this->institution_id,
             'institution' => new InstitutionResource($this->whenLoaded('institution')),
+            'college_id' => $this->college_id,
+            'college' => new CollegeResource($this->whenLoaded('college')),
             'phone' => $this->phone,
             'national_id' => $this->national_id,
             'avatar_url' => $this->avatar_url,

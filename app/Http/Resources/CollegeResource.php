@@ -5,18 +5,18 @@ namespace App\Http\Resources;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
-class InstitutionResource extends JsonResource
+class CollegeResource extends JsonResource
 {
     public function toArray(Request $request): array
     {
         return [
             'id' => $this->id,
+            'institution_id' => $this->institution_id,
             'name' => $this->name,
-            'type' => $this->type,
-            'address' => $this->address,
-            'colleges' => CollegeResource::collection($this->whenLoaded('colleges')),
-            'colleges_count' => $this->colleges()->count(),
-            'users_count' => $this->users()->count(),
+            'code' => $this->code,
+            'dean_name' => $this->dean_name,
+            'description' => $this->description,
+            'users_count' => $this->whenCounted('users'),
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
         ];

@@ -7,36 +7,33 @@ use Illuminate\Database\Eloquent\Model;
 use Spatie\Activitylog\Models\Concerns\LogsActivity;
 use Spatie\Activitylog\Support\LogOptions;
 
-class Institution extends Model
+class College extends Model
 {
     use HasFactory, LogsActivity;
 
     protected $fillable = [
+        'institution_id',
         'name',
-        'type',
-        'address'
+        'code',
+        'dean_name',
+        'description',
     ];
 
     public function getActivitylogOptions(): LogOptions
     {
         return LogOptions::defaults()
-            ->logOnly(['name', 'type', 'address'])
+            ->logOnly(['institution_id', 'name', 'code', 'dean_name'])
             ->logOnlyDirty()
             ->dontLogEmptyChanges();
     }
 
-    public function colleges()
+    public function institution()
     {
-        return $this->hasMany(College::class);
+        return $this->belongsTo(Institution::class);
     }
 
     public function users()
     {
         return $this->hasMany(User::class);
-    }
-
-    public function courses()
-    {
-        return $this->hasMany(Course::class);
     }
 }

@@ -20,6 +20,7 @@ class User extends Authenticatable
         'email',
         'password',
         'institution_id',
+        'college_id',
         'phone',
         'national_id',
         'avatar_url',
@@ -43,7 +44,7 @@ class User extends Authenticatable
     public function getActivitylogOptions(): LogOptions
     {
         return LogOptions::defaults()
-            ->logOnly(['name', 'email', 'institution_id'])
+            ->logOnly(['name', 'email', 'institution_id', 'college_id'])
             ->logOnlyDirty()
             ->dontLogEmptyChanges();
     }
@@ -51,6 +52,11 @@ class User extends Authenticatable
     public function institution()
     {
         return $this->belongsTo(Institution::class);
+    }
+
+    public function college()
+    {
+        return $this->belongsTo(College::class);
     }
 
     public function enrollments()

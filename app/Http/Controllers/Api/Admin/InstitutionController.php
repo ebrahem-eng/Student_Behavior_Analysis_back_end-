@@ -11,7 +11,7 @@ class InstitutionController extends Controller
 {
     public function index()
     {
-        return InstitutionResource::collection(Institution::all());
+        return InstitutionResource::collection(Institution::with(['colleges'])->get());
     }
 
     public function store(Request $request)
@@ -24,25 +24,25 @@ class InstitutionController extends Controller
 
         $institution = Institution::create($validated);
 
-        return new InstitutionResource($institution);
+        return new InstitutionResource($institution->load('colleges'));
     }
 
     public function show(Institution $institution)
     {
-        return new InstitutionResource($institution);
+        return new InstitutionResource($institution->load('colleges'));
     }
 
     public function update(Request $request, Institution $institution)
     {
         $validated = $request->validate([
-            'name' => 'string|max:255',
-            'type' => 'in:school,university',
+            'name' => 'sometimes|string|max:255',
+            'type' => 'sometimes|in:school,university',
             'address' => 'nullable|string'
         ]);
 
         $institution->update($validated);
 
-        return new InstitutionResource($institution);
+        return new InstitutionResource($institution->load('colleges'));
     }
 
     public function destroy(Institution $institution)

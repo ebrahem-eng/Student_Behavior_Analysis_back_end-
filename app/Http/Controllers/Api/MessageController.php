@@ -24,7 +24,8 @@ class MessageController extends Controller
                           $inner->where('sender_id', $userId)->where('recipient_id', $otherUserId);
                       })->orWhere(function ($inner) use ($userId, $otherUserId) {
                           $inner->where('sender_id', $otherUserId)->where('recipient_id', $userId);
-                      });
+                      })->orWhere('sender_id', $otherUserId)
+                        ->orWhere('recipient_id', $otherUserId);
                   });
         } elseif ($studentId) {
             $query->where('student_id', $studentId);

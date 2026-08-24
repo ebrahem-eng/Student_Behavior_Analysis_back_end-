@@ -9,9 +9,47 @@ use Illuminate\Http\Request;
 
 class GradeController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        return GradeResource::collection(Grade::all());
+        $user = $request->user();
+        $query = Grade::with(['enrollment.student', 'enrollment.section.course']);
+
+        if ($user && !$user->hasRole('admin')) {
+            if ($user->hasRole('student')) {
+                $query->whereHas('enrollment', function ($q) use ($user) {
+                    $q->where('user_id', $user->id);
+                });
+            } elseif ($user->hasRole('teacher')) {
+                // If teacher, scope to their taught sections or institution
+                if ($request->boolean('my_sections')) {
+                    $query->whereHas('enrollment.section', function ($q) use ($user) {
+                        $q->where('teacher_id', $user->id);
+                    });
+                } elseif ($user->institution_id) {
+                    $query->whereHas('enrollment.student', function ($q) use ($user) {
+                        $q->where('institution_id', $user->institution_id);
+                    });
+                }
+            } elseif ($user->hasRole('advisor') && $user->institution_id) {
+                $query->whereHas('enrollment.student', function ($q) use ($user) {
+                    $q->where('institution_id', $user->institution_id);
+                });
+            }
+        }
+
+        if ($request->filled('student_id')) {
+            $query->whereHas('enrollment', function ($q) use ($request) {
+                $q->where('user_id', $request->input('student_id'));
+            });
+        }
+
+        if ($request->filled('course_id')) {
+            $query->whereHas('enrollment.section', function ($q) use ($request) {
+                $q->where('course_id', $request->input('course_id'));
+            });
+        }
+
+        return GradeResource::collection($query->get());
     }
 
     public function store(Request $request)
@@ -24,24 +62,24 @@ class GradeController extends Controller
         ]);
 
         $grade = Grade::create($validated);
-        return new GradeResource($grade);
+        return new GradeResource($grade->load(['enrollment.student', 'enrollment.section.course']));
     }
 
     public function show(Grade $grade)
     {
-        return new GradeResource($grade);
+        return new GradeResource($grade->load(['enrollment.student', 'enrollment.section.course']));
     }
 
     public function update(Request $request, Grade $grade)
     {
         $validated = $request->validate([
-            'exam_name' => 'string|max:255',
-            'score' => 'numeric|min:0|max:100',
-            'weight' => 'numeric|min:0|max:1',
+            'exam_name' => 'sometimes|string|max:255',
+            'score' => 'sometimes|numeric|min:0|max:100',
+            'weight' => 'sometimes|numeric|min:0|max:1',
         ]);
 
         $grade->update($validated);
-        return new GradeResource($grade);
+        return new GradeResource($grade->load(['enrollment.student', 'enrollment.section.course']));
     }
 
     public function destroy(Grade $grade)

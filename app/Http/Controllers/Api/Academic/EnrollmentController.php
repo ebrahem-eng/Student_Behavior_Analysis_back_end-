@@ -9,9 +9,40 @@ use Illuminate\Http\Request;
 
 class EnrollmentController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        return EnrollmentResource::collection(Enrollment::all());
+        $user = $request->user();
+        $query = Enrollment::with(['student', 'section.course', 'section.teacher']);
+
+        if ($user && !$user->hasRole('admin')) {
+            if ($user->hasRole('student')) {
+                $query->where('user_id', $user->id);
+            } elseif ($user->hasRole('teacher')) {
+                if ($request->boolean('my_sections')) {
+                    $query->whereHas('section', function ($q) use ($user) {
+                        $q->where('teacher_id', $user->id);
+                    });
+                } elseif ($user->institution_id) {
+                    $query->whereHas('student', function ($q) use ($user) {
+                        $q->where('institution_id', $user->institution_id);
+                    });
+                }
+            } elseif ($user->hasRole('advisor') && $user->institution_id) {
+                $query->whereHas('student', function ($q) use ($user) {
+                    $q->where('institution_id', $user->institution_id);
+                });
+            }
+        }
+
+        if ($request->filled('section_id')) {
+            $query->where('section_id', $request->input('section_id'));
+        }
+
+        if ($request->filled('student_id') || $request->filled('user_id')) {
+            $query->where('user_id', $request->input('student_id', $request->input('user_id')));
+        }
+
+        return EnrollmentResource::collection($query->get());
     }
 
     public function store(Request $request)
@@ -24,12 +55,12 @@ class EnrollmentController extends Controller
         ]);
 
         $enrollment = Enrollment::create($validated);
-        return new EnrollmentResource($enrollment);
+        return new EnrollmentResource($enrollment->load(['student', 'section.course']));
     }
 
     public function show(Enrollment $enrollment)
     {
-        return new EnrollmentResource($enrollment);
+        return new EnrollmentResource($enrollment->load(['student', 'section.course']));
     }
 
     public function update(Request $request, Enrollment $enrollment)
@@ -40,7 +71,7 @@ class EnrollmentController extends Controller
         ]);
 
         $enrollment->update($validated);
-        return new EnrollmentResource($enrollment);
+        return new EnrollmentResource($enrollment->load(['student', 'section.course']));
     }
 
     public function destroy(Enrollment $enrollment)
@@ -56,7 +87,6 @@ class EnrollmentController extends Controller
             ->whereNotNull('grade')
             ->get();
             
-        // Simplified progress calculation
         $totalCompleted = $enrollments->count();
         $averageGrade = $enrollments->avg('grade') ?? 0;
         
@@ -64,7 +94,6 @@ class EnrollmentController extends Controller
             'student_id' => $studentId,
             'completed_courses' => $totalCompleted,
             'average_grade' => round($averageGrade, 2),
-            // Assuming 40 courses for graduation in this basic calculation
             'graduation_progress_percent' => min(100, round(($totalCompleted / 40) * 100, 2))
         ]);
     }

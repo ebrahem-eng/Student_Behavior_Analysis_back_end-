@@ -13,19 +13,27 @@ class UserController extends Controller
 {
     public function index(Request $request)
     {
+        $authUser = $request->user();
         $query = User::with(['roles', 'institution', 'college']);
+
         if ($request->filled('role')) {
             $roleName = $request->input('role');
             $query->whereHas('roles', function ($q) use ($roleName) {
                 $q->where('name', 'like', $roleName);
             });
         }
+
+        // Institutional scoping for non-admin users
         if ($request->filled('institution_id')) {
             $query->where('institution_id', $request->input('institution_id'));
+        } elseif ($authUser && $authUser->institution_id && !$authUser->hasRole('admin')) {
+            $query->where('institution_id', $authUser->institution_id);
         }
+
         if ($request->filled('college_id')) {
             $query->where('college_id', $request->input('college_id'));
         }
+
         return UserResource::collection($query->get());
     }
 

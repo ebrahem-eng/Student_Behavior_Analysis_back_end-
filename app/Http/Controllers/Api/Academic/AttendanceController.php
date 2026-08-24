@@ -9,9 +9,44 @@ use Illuminate\Http\Request;
 
 class AttendanceController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        return AttendanceResource::collection(Attendance::all());
+        $user = $request->user();
+        $query = Attendance::with(['student', 'section.course']);
+
+        if ($user && !$user->hasRole('admin')) {
+            if ($user->hasRole('student')) {
+                $query->where('user_id', $user->id);
+            } elseif ($user->hasRole('teacher')) {
+                if ($request->boolean('my_sections')) {
+                    $query->whereHas('section', function ($q) use ($user) {
+                        $q->where('teacher_id', $user->id);
+                    });
+                } elseif ($user->institution_id) {
+                    $query->whereHas('student', function ($q) use ($user) {
+                        $q->where('institution_id', $user->institution_id);
+                    });
+                }
+            } elseif ($user->hasRole('advisor') && $user->institution_id) {
+                $query->whereHas('student', function ($q) use ($user) {
+                    $q->where('institution_id', $user->institution_id);
+                });
+            }
+        }
+
+        if ($request->filled('user_id')) {
+            $query->where('user_id', $request->input('user_id'));
+        }
+
+        if ($request->filled('section_id')) {
+            $query->where('section_id', $request->input('section_id'));
+        }
+
+        if ($request->filled('date')) {
+            $query->whereDate('date', $request->input('date'));
+        }
+
+        return AttendanceResource::collection($query->get());
     }
 
     public function store(Request $request)
@@ -25,23 +60,23 @@ class AttendanceController extends Controller
         ]);
 
         $attendance = Attendance::create($validated);
-        return new AttendanceResource($attendance);
+        return new AttendanceResource($attendance->load(['student', 'section.course']));
     }
 
     public function show(Attendance $attendance)
     {
-        return new AttendanceResource($attendance);
+        return new AttendanceResource($attendance->load(['student', 'section.course']));
     }
 
     public function update(Request $request, Attendance $attendance)
     {
         $validated = $request->validate([
-            'status' => 'in:present,absent,late',
+            'status' => 'sometimes|in:present,absent,late',
             'notes' => 'nullable|string',
         ]);
 
         $attendance->update($validated);
-        return new AttendanceResource($attendance);
+        return new AttendanceResource($attendance->load(['student', 'section.course']));
     }
 
     public function destroy(Attendance $attendance)

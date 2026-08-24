@@ -9,9 +9,27 @@ use Illuminate\Http\Request;
 
 class CourseController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        return CourseResource::collection(Course::all());
+        $user = $request->user();
+        $query = Course::with(['institution', 'sections.teacher']);
+
+        // Explicit filter by institution_id if provided
+        if ($request->filled('institution_id')) {
+            $query->where('institution_id', $request->input('institution_id'));
+        } elseif ($user && $user->institution_id && !$user->hasRole('admin')) {
+            // Scope by authenticated user's institution
+            $query->where('institution_id', $user->institution_id);
+        }
+
+        // If teacher requested specifically their taught courses/sections
+        if ($request->boolean('my_courses') && $user) {
+            $query->whereHas('sections', function ($q) use ($user) {
+                $q->where('teacher_id', $user->id);
+            });
+        }
+
+        return CourseResource::collection($query->get());
     }
 
     public function store(Request $request)
@@ -29,16 +47,16 @@ class CourseController extends Controller
 
     public function show(Course $course)
     {
-        return new CourseResource($course);
+        return new CourseResource($course->load(['institution', 'sections.teacher']));
     }
 
     public function update(Request $request, Course $course)
     {
         $validated = $request->validate([
-            'institution_id' => 'exists:institutions,id',
-            'code' => 'string|max:255',
-            'name' => 'string|max:255',
-            'credits' => 'integer|min:0',
+            'institution_id' => 'sometimes|exists:institutions,id',
+            'code' => 'sometimes|string|max:255',
+            'name' => 'sometimes|string|max:255',
+            'credits' => 'sometimes|integer|min:0',
         ]);
 
         $course->update($validated);

@@ -17,6 +17,7 @@ use App\Http\Controllers\Api\Admin\ActivityLogController;
 use App\Http\Controllers\Api\Admin\ApiKeyController;
 use App\Http\Controllers\Api\AlertController;
 use App\Http\Controllers\Api\NotificationController;
+use App\Http\Controllers\Api\MessageController;
 use App\Http\Controllers\Api\ConsentController;
 use App\Http\Controllers\Api\Academic\ReportController;
 use App\Http\Controllers\Api\Auth\AuthController;
@@ -47,6 +48,11 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::get('notifications', [NotificationController::class, 'index']);
     Route::patch('notifications/{id}/read', [NotificationController::class, 'markAsRead']);
     Route::post('notifications/read-all', [NotificationController::class, 'markAllAsRead']);
+
+    // Messages / Communications
+    Route::get('messages', [MessageController::class, 'index']);
+    Route::post('messages', [MessageController::class, 'store']);
+    Route::patch('messages/{id}/read', [MessageController::class, 'markAsRead']);
 
     // Consent Management
     Route::get('consent', [ConsentController::class, 'index']);

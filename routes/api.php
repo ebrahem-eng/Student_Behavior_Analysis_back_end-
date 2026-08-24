@@ -19,6 +19,7 @@ use App\Http\Controllers\Api\AlertController;
 use App\Http\Controllers\Api\NotificationController;
 use App\Http\Controllers\Api\MessageController;
 use App\Http\Controllers\Api\ConsentController;
+use App\Http\Controllers\Api\AiChatController;
 use App\Http\Controllers\Api\Academic\ReportController;
 use App\Http\Controllers\Api\Auth\AuthController;
 use App\Http\Resources\UserResource;
@@ -53,6 +54,9 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::get('messages', [MessageController::class, 'index']);
     Route::post('messages', [MessageController::class, 'store']);
     Route::patch('messages/{id}/read', [MessageController::class, 'markAsRead']);
+
+    // AI Intelligence Chat Core
+    Route::post('ai/chat', [AiChatController::class, 'chat']);
 
     // Consent Management
     Route::get('consent', [ConsentController::class, 'index']);

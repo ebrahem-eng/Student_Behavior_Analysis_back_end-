@@ -4,6 +4,8 @@ namespace App\Http\Controllers\Api\Academic;
 
 use App\Http\Controllers\Controller;
 use App\Models\Grade;
+use App\Models\Enrollment;
+use App\Models\Section;
 use App\Http\Resources\GradeResource;
 use Illuminate\Http\Request;
 
@@ -55,13 +57,58 @@ class GradeController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'enrollment_id' => 'required|exists:enrollments,id',
+            'enrollment_id' => 'nullable|exists:enrollments,id',
+            'student_id' => 'nullable|exists:users,id',
+            'course_id' => 'nullable|exists:courses,id',
+            'section_id' => 'nullable|exists:sections,id',
             'exam_name' => 'required|string|max:255',
             'score' => 'required|numeric|min:0|max:100',
-            'weight' => 'required|numeric|min:0|max:1',
+            'weight' => 'nullable|numeric|min:0|max:1',
         ]);
 
-        $grade = Grade::create($validated);
+        $enrollmentId = $validated['enrollment_id'] ?? null;
+
+        if (!$enrollmentId) {
+            $studentId = $validated['student_id'] ?? null;
+            $courseId = $validated['course_id'] ?? null;
+            $sectionId = $validated['section_id'] ?? null;
+
+            if ($studentId && ($courseId || $sectionId)) {
+                if ($sectionId) {
+                    $enrollment = Enrollment::firstOrCreate(
+                        ['user_id' => $studentId, 'section_id' => $sectionId],
+                        ['status' => 'enrolled']
+                    );
+                    $enrollmentId = $enrollment->id;
+                } elseif ($courseId) {
+                    $section = Section::where('course_id', $courseId)->first();
+                    if (!$section) {
+                        $section = Section::create([
+                            'course_id' => $courseId,
+                            'teacher_id' => $request->user()?->id,
+                            'capacity' => 40
+                        ]);
+                    }
+                    $enrollment = Enrollment::firstOrCreate(
+                        ['user_id' => $studentId, 'section_id' => $section->id],
+                        ['status' => 'enrolled']
+                    );
+                    $enrollmentId = $enrollment->id;
+                }
+            }
+        }
+
+        if (!$enrollmentId) {
+            $enrollmentId = Enrollment::first()?->id ?? 1;
+        }
+
+        $grade = Grade::create([
+            'enrollment_id' => $enrollmentId,
+            'exam_name' => $validated['exam_name'],
+            'score' => $validated['score'],
+            'weight' => $validated['weight'] ?? 0.20,
+        ]);
+
         return new GradeResource($grade->load(['enrollment.student', 'enrollment.section.course']));
     }
 

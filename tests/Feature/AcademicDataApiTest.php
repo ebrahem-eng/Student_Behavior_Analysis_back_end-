@@ -82,4 +82,19 @@ class AcademicDataApiTest extends TestCase
         $response->assertStatus(201)
             ->assertJsonPath('data.status', 'present');
     }
+
+    public function test_unassigned_teacher_returns_empty_courses_cleanly()
+    {
+        \Spatie\Permission\Models\Role::firstOrCreate(['name' => 'Teacher', 'guard_name' => 'web']);
+        $standaloneTeacher = User::factory()->create([
+            'institution_id' => null,
+        ]);
+        $standaloneTeacher->assignRole('Teacher');
+        Sanctum::actingAs($standaloneTeacher);
+
+        $response = $this->getJson('/api/academic/courses?my_courses=true');
+
+        $response->assertStatus(200)
+            ->assertJsonPath('data', []);
+    }
 }

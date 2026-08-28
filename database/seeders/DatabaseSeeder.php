@@ -69,6 +69,17 @@ class DatabaseSeeder extends Seeder
         ]);
         $teacher->assignRole('Teacher');
 
+        // Standalone / Unassigned Teacher (No institution or assigned sections)
+        $unassignedTeacher = User::create([
+            'name' => 'Standalone Teacher (No School)',
+            'email' => 'newteacher@sba.local',
+            'password' => 'password',
+            'institution_id' => null,
+            'phone' => null,
+            'national_id' => null,
+        ]);
+        $unassignedTeacher->assignRole('Teacher');
+
         $advisor = User::create([
             'name' => 'Sarah Al-Mansoor',
             'email' => 'advisor@sba.local',

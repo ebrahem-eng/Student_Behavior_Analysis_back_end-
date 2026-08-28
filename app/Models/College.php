@@ -36,4 +36,24 @@ class College extends Model
     {
         return $this->hasMany(User::class);
     }
+
+    public function students()
+    {
+        return $this->hasMany(User::class)->role('student');
+    }
+
+    public function teachers()
+    {
+        return $this->hasMany(User::class)->role('teacher');
+    }
+
+    public function getUnitTypeAttribute(): string
+    {
+        return $this->institution?->type === 'school' ? 'stage' : 'college';
+    }
+
+    public function getSupervisorNameAttribute(): ?string
+    {
+        return $this->dean_name;
+    }
 }

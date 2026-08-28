@@ -9,6 +9,9 @@ class UserResource extends JsonResource
 {
     public function toArray(Request $request): array
     {
+        $instType = $this->institution?->type ?? 'university';
+        $isSchool = $instType === 'school';
+
         return [
             'id' => $this->id,
             'name' => $this->name,
@@ -17,6 +20,13 @@ class UserResource extends JsonResource
             'institution' => new InstitutionResource($this->whenLoaded('institution')),
             'college_id' => $this->college_id,
             'college' => new CollegeResource($this->whenLoaded('college')),
+            'stage_id' => $this->college_id,
+            'stage' => new CollegeResource($this->whenLoaded('college')),
+            'unit_type' => $isSchool ? 'stage' : 'college',
+            'sub_unit_name' => $this->college?->name,
+            'sub_unit_code' => $this->college?->code,
+            'is_school_member' => $isSchool,
+            'is_university_member' => !$isSchool,
             'phone' => $this->phone,
             'national_id' => $this->national_id,
             'avatar_url' => $this->avatar_url,

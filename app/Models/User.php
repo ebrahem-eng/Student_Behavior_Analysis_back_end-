@@ -59,6 +59,11 @@ class User extends Authenticatable
         return $this->belongsTo(College::class);
     }
 
+    public function stage()
+    {
+        return $this->belongsTo(College::class, 'college_id');
+    }
+
     public function enrollments()
     {
         return $this->hasMany(Enrollment::class);
@@ -72,5 +77,15 @@ class User extends Authenticatable
     public function alerts()
     {
         return $this->hasMany(Alert::class, 'student_id');
+    }
+
+    public function isSchoolMember(): bool
+    {
+        return $this->institution?->type === 'school';
+    }
+
+    public function isUniversityMember(): bool
+    {
+        return $this->institution?->type === 'university';
     }
 }

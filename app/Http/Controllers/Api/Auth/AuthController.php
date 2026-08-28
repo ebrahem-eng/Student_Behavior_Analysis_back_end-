@@ -23,7 +23,7 @@ class AuthController extends Controller
             'device_name' => 'nullable|string',
         ]);
 
-        $user = User::with(['roles', 'institution'])->where('email', $request->email)->first();
+        $user = User::with(['roles', 'institution', 'college'])->where('email', $request->email)->first();
 
         if (!$user || !Hash::check($request->password, $user->password)) {
             throw ValidationException::withMessages([
@@ -59,7 +59,7 @@ class AuthController extends Controller
      */
     public function me(Request $request)
     {
-        $user = $request->user()->load(['roles', 'institution']);
+        $user = $request->user()->load(['roles', 'institution', 'college']);
         return new UserResource($user);
     }
 
@@ -81,7 +81,7 @@ class AuthController extends Controller
 
         return response()->json([
             'message' => 'Profile updated successfully',
-            'user' => new UserResource($user->load(['roles', 'institution'])),
+            'user' => new UserResource($user->load(['roles', 'institution', 'college'])),
         ]);
     }
 

@@ -30,6 +30,11 @@ class Institution extends Model
         return $this->hasMany(College::class);
     }
 
+    public function stages()
+    {
+        return $this->hasMany(College::class);
+    }
+
     public function users()
     {
         return $this->hasMany(User::class);
@@ -38,5 +43,15 @@ class Institution extends Model
     public function courses()
     {
         return $this->hasMany(Course::class);
+    }
+
+    public function isSchool(): bool
+    {
+        return $this->type === 'school';
+    }
+
+    public function isUniversity(): bool
+    {
+        return $this->type === 'university';
     }
 }

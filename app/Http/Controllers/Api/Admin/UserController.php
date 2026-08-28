@@ -32,6 +32,15 @@ class UserController extends Controller
 
         if ($request->filled('college_id')) {
             $query->where('college_id', $request->input('college_id'));
+        } elseif ($request->filled('stage_id')) {
+            $query->where('college_id', $request->input('stage_id'));
+        }
+
+        if ($request->filled('institution_type')) {
+            $type = $request->input('institution_type');
+            $query->whereHas('institution', function ($q) use ($type) {
+                $q->where('type', $type);
+            });
         }
 
         return UserResource::collection($query->get());
@@ -39,6 +48,8 @@ class UserController extends Controller
 
     public function store(Request $request)
     {
+        $collegeId = $request->input('college_id') ?: $request->input('stage_id');
+
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users',
@@ -46,6 +57,7 @@ class UserController extends Controller
             'role' => 'required|string|exists:roles,name',
             'institution_id' => 'nullable|exists:institutions,id',
             'college_id' => 'nullable|exists:colleges,id',
+            'stage_id' => 'nullable|exists:colleges,id',
             'phone' => 'nullable|string|max:50',
             'national_id' => 'nullable|string|max:50',
         ]);
@@ -55,7 +67,7 @@ class UserController extends Controller
             'email' => $validated['email'],
             'password' => Hash::make($validated['password']),
             'institution_id' => $validated['institution_id'] ?? null,
-            'college_id' => $validated['college_id'] ?? null,
+            'college_id' => $collegeId ?? null,
             'phone' => $validated['phone'] ?? null,
             'national_id' => $validated['national_id'] ?? null,
         ]);
@@ -72,19 +84,25 @@ class UserController extends Controller
 
     public function update(Request $request, User $user)
     {
+        $collegeId = $request->has('college_id') ? $request->input('college_id') : ($request->has('stage_id') ? $request->input('stage_id') : $user->college_id);
+
         $validated = $request->validate([
             'name' => 'sometimes|string|max:255',
             'email' => 'sometimes|string|email|max:255|unique:users,email,'.$user->id,
             'role' => 'sometimes|string|exists:roles,name',
             'institution_id' => 'nullable|exists:institutions,id',
             'college_id' => 'nullable|exists:colleges,id',
+            'stage_id' => 'nullable|exists:colleges,id',
             'phone' => 'nullable|string|max:50',
             'national_id' => 'nullable|string|max:50',
         ]);
 
-        $user->update($request->only([
-            'name', 'email', 'institution_id', 'college_id', 'phone', 'national_id'
-        ]));
+        $updateData = $request->only(['name', 'email', 'institution_id', 'phone', 'national_id']);
+        if ($request->has('college_id') || $request->has('stage_id')) {
+            $updateData['college_id'] = $collegeId;
+        }
+
+        $user->update($updateData);
 
         if ($request->has('role')) {
             $user->syncRoles([$validated['role']]);

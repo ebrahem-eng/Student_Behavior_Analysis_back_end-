@@ -44,6 +44,12 @@ class RecommendationController extends Controller
             $query->where('status', $request->input('status'));
         }
 
+        if ($request->filled('institution_id') && $request->input('institution_id') !== 'all') {
+            $query->whereHas('student', function ($q) use ($request) {
+                $q->where('institution_id', $request->input('institution_id'));
+            });
+        }
+
         return RecommendationResource::collection($query->get());
     }
 

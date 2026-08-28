@@ -49,6 +49,12 @@ class AttendanceController extends Controller
             });
         }
 
+        if ($request->filled('institution_id') && $request->input('institution_id') !== 'all') {
+            $query->whereHas('section.course', function ($q) use ($request) {
+                $q->where('institution_id', $request->input('institution_id'));
+            });
+        }
+
         if ($request->filled('date')) {
             $query->whereDate('date', $request->input('date'));
         }

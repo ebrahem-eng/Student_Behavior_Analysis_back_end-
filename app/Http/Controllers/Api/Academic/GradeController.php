@@ -22,7 +22,6 @@ class GradeController extends Controller
                     $q->where('user_id', $user->id);
                 });
             } elseif ($user->hasRole('teacher')) {
-                // If teacher, scope to their taught sections or institution
                 if ($request->boolean('my_sections')) {
                     $query->whereHas('enrollment.section', function ($q) use ($user) {
                         $q->where('teacher_id', $user->id);
@@ -48,6 +47,12 @@ class GradeController extends Controller
         if ($request->filled('course_id')) {
             $query->whereHas('enrollment.section', function ($q) use ($request) {
                 $q->where('course_id', $request->input('course_id'));
+            });
+        }
+
+        if ($request->filled('institution_id') && $request->input('institution_id') !== 'all') {
+            $query->whereHas('enrollment.section.course', function ($q) use ($request) {
+                $q->where('institution_id', $request->input('institution_id'));
             });
         }
 

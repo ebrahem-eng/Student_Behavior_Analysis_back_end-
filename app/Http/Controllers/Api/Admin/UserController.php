@@ -23,10 +23,18 @@ class UserController extends Controller
             });
         }
 
+        // Course filter
+        if ($request->filled('course_id')) {
+            $courseId = $request->input('course_id');
+            $query->whereHas('enrollments.section', function ($q) use ($courseId) {
+                $q->where('course_id', $courseId);
+            });
+        }
+
         // Institutional scoping for non-admin users
-        if ($request->filled('institution_id')) {
+        if ($request->filled('institution_id') && $request->input('institution_id') !== 'all') {
             $query->where('institution_id', $request->input('institution_id'));
-        } elseif ($authUser && $authUser->institution_id && !$authUser->hasRole('admin')) {
+        } elseif ($authUser && $authUser->institution_id && !$authUser->hasRole('admin') && !$request->boolean('all_institutions')) {
             $query->where('institution_id', $authUser->institution_id);
         }
 

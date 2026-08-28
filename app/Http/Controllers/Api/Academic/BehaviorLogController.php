@@ -36,6 +36,12 @@ class BehaviorLogController extends Controller
             $query->where('user_id', $request->input('user_id'));
         }
 
+        if ($request->filled('institution_id') && $request->input('institution_id') !== 'all') {
+            $query->whereHas('student', function ($q) use ($request) {
+                $q->where('institution_id', $request->input('institution_id'));
+            });
+        }
+
         return BehaviorLogResource::collection($query->get());
     }
 

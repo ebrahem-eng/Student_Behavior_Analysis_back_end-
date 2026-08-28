@@ -9,9 +9,27 @@ use Illuminate\Http\Request;
 
 class InstitutionController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        return InstitutionResource::collection(Institution::with(['colleges'])->get());
+        $user = $request->user();
+        $query = Institution::with(['colleges']);
+
+        if ($request->boolean('my_affiliations') && $user) {
+            $query->where(function ($q) use ($user) {
+                if ($user->institution_id) {
+                    $q->where('id', $user->institution_id);
+                }
+                $q->orWhereHas('courses.sections', function ($sq) use ($user) {
+                    $sq->where('teacher_id', $user->id);
+                });
+            });
+        }
+
+        if ($request->filled('type')) {
+            $query->where('type', $request->input('type'));
+        }
+
+        return InstitutionResource::collection($query->get());
     }
 
     public function store(Request $request)

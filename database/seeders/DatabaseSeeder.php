@@ -177,6 +177,31 @@ class DatabaseSeeder extends Seeder
             'capacity' => 25,
         ]);
 
+        // Dual-institution teaching assignment for school context
+        $schoolTerm = Term::firstOrCreate([
+            'institution_id' => $school->id,
+            'name' => 'Academic Year 2026-2027',
+        ], [
+            'start_date' => '2026-09-01',
+            'end_date' => '2027-06-15',
+        ]);
+
+        $schoolCourse = Course::firstOrCreate([
+            'institution_id' => $school->id,
+            'code' => 'MATH-10',
+        ], [
+            'name' => 'High School Mathematics 10',
+            'credits' => 3,
+        ]);
+
+        Section::firstOrCreate([
+            'course_id' => $schoolCourse->id,
+            'term_id' => $schoolTerm->id,
+            'teacher_id' => $teacher->id,
+        ], [
+            'capacity' => 30,
+        ]);
+
         // 5. Enrollments
         $enr1 = Enrollment::create([
             'user_id' => $student1->id,

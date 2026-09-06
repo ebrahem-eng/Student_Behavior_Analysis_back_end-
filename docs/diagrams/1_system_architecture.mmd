@@ -1,0 +1,51 @@
+flowchart TD
+    subgraph Client_Layer["🖥️ Frontend Clients (React 19 / PWA / Tailwind)"]
+        Landing["🌐 Landing & AI Simulator"]
+        AdminUI["👑 Admin Portal"]
+        AdvisorUI["🛡️ Advisor Portal"]
+        TeacherUI["👨‍🏫 Teacher Portal"]
+        StudentUI["🎓 Student Portal"]
+        ParentUI["👨‍👩‍👧 Parent Portal"]
+    end
+
+    subgraph Gateway_Layer["🔒 API & Real-Time Gateway"]
+        AuthGuard["Sanctum Auth / RBAC Middleware"]
+        ReverbWS["📡 Laravel Reverb WebSockets"]
+    end
+
+    subgraph Backend_Core["⚙️ System of Record (Laravel 11 API)"]
+        AuthModule["Identity & Access Management"]
+        AdminModule["Institutions & Thresholds Engine"]
+        AcademicModule["Grades, Attendance & Behavior Logs"]
+        AlertModule["Multi-Tier Alert Fanout Engine"]
+        CommsModule["Advisor-Parent Messaging Hub"]
+        ConsentGate["🛡️ FERPA & Privacy Consent Gate"]
+    end
+
+    subgraph ML_Microservice["🧠 Python AI Microservice (FastAPI)"]
+        RiskModel["Gradient Boosting (XGBoost / LightGBM)"]
+        XAI["Explainable AI (SHAP Factor Attribution)"]
+        NLP["Sentiment Analysis & Chatbot Grounding"]
+        Drift["Model Retraining & Drift Monitor"]
+    end
+
+    subgraph Data_Layer["🗄️ Persistence & Cache (MySQL 8.0+ & Redis)"]
+        MySQL[("🛢️ MySQL 8.0 Database")]
+        Redis[("⚡ Redis Cache & Horizon Queues")]
+    end
+
+    %% Client to Gateway
+    Landing & AdminUI & AdvisorUI & TeacherUI & StudentUI & ParentUI -->|REST / JSON| AuthGuard
+    ReverbWS -->|Live Push Notifications| AdminUI & AdvisorUI & TeacherUI & StudentUI & ParentUI
+
+    %% Gateway to Backend
+    AuthGuard --> AuthModule & AdminModule & AcademicModule & AlertModule & CommsModule & ConsentGate
+
+    %% Backend to Storage
+    Backend_Core -->|CRUD / Transactions| MySQL
+    Backend_Core -->|Queues / Cache / Events| Redis
+    Redis -->|Broadcast Events| ReverbWS
+
+    %% Backend to Python ML
+    ConsentGate -->|Feature Vectors| ML_Microservice
+    RiskModel & XAI & NLP -->|Risk Scores & Explanations| Backend_Core

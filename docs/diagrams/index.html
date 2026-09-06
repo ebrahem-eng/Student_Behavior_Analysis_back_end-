@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SBA System Diagrams & Flowcharts</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&family=Cairo:wght@600;700;800&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+  <style>
+    :root {
+      --bg: #090d16;
+      --card: #111827;
+      --border: rgba(255, 255, 255, 0.1);
+      --primary: #3b82f6;
+      --text: #f3f4f6;
+      --muted: #9ca3af;
+    }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      font-family: 'Plus Jakarta Sans', -apple-system, sans-serif;
+      background-color: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      padding: 40px 20px;
+    }
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    header {
+      text-align: center;
+      margin-bottom: 48px;
+    }
+    .badge {
+      display: inline-block;
+      padding: 6px 14px;
+      background: rgba(59, 130, 246, 0.1);
+      border: 1px solid rgba(59, 130, 246, 0.3);
+      color: var(--primary);
+      border-radius: 9999px;
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      margin-bottom: 12px;
+    }
+    h1 {
+      font-size: 32px;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      margin-bottom: 8px;
+    }
+    p.subtitle {
+      color: var(--muted);
+      font-size: 15px;
+    }
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      padding: 32px;
+      margin-bottom: 40px;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+    }
+    .card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 16px;
+      margin-bottom: 24px;
+    }
+    .card-title {
+      font-size: 20px;
+      font-weight: 700;
+      color: #fff;
+    }
+    .card-desc {
+      font-size: 13px;
+      color: var(--muted);
+      margin-top: 4px;
+    }
+    .diagram-container {
+      display: flex;
+      justify-content: center;
+      overflow-x: auto;
+      padding: 20px 0;
+    }
+    .mermaid {
+      width: 100%;
+      display: flex;
+      justify-content: center;
+    }
+    footer {
+      text-align: center;
+      margin-top: 60px;
+      font-size: 13px;
+      color: var(--muted);
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <header>
+      <span class="badge">Architecture & Flows</span>
+      <h1>Student Behavior Analysis Platform</h1>
+      <p class="subtitle">Official System Flowcharts, Actor Hierarchies, and End-to-End Workflow Diagrams</p>
+    </header>
+
+    <!-- Diagram 1: System Architecture -->
+    <div class="card">
+      <div class="card-header">
+        <div>
+          <h2 class="card-title">1. Polyglot System Architecture Flowchart</h2>
+          <p class="card-desc">React 19 Frontend + Laravel 11 API + Python FastAPI ML + MySQL 8.0 + Reverb WebSockets</p>
+        </div>
+      </div>
+      <div class="diagram-container">
+        <pre class="mermaid">
+flowchart TD
+    subgraph Client_Layer["🖥️ Frontend Clients (React 19 / PWA / Tailwind)"]
+        Landing["🌐 Landing & AI Simulator"]
+        AdminUI["👑 Admin Portal"]
+        AdvisorUI["🛡️ Advisor Portal"]
+        TeacherUI["👨‍🏫 Teacher Portal"]
+        StudentUI["🎓 Student Portal"]
+        ParentUI["👨‍👩‍👧 Parent Portal"]
+    end
+
+    subgraph Gateway_Layer["🔒 API & Real-Time Gateway"]
+        AuthGuard["Sanctum Auth / RBAC Middleware"]
+        ReverbWS["📡 Laravel Reverb WebSockets"]
+    end
+
+    subgraph Backend_Core["⚙️ System of Record (Laravel 11 API)"]
+        AuthModule["Identity & Access Management"]
+        AdminModule["Institutions & Thresholds Engine"]
+        AcademicModule["Grades, Attendance & Behavior Logs"]
+        AlertModule["Multi-Tier Alert Fanout Engine"]
+        CommsModule["Advisor-Parent Messaging Hub"]
+        ConsentGate["🛡️ FERPA & Privacy Consent Gate"]
+    end
+
+    subgraph ML_Microservice["🧠 Python AI Microservice (FastAPI)"]
+        RiskModel["Gradient Boosting (XGBoost / LightGBM)"]
+        XAI["Explainable AI (SHAP Factor Attribution)"]
+        NLP["Sentiment Analysis & Chatbot Grounding"]
+        Drift["Model Retraining & Drift Monitor"]
+    end
+
+    subgraph Data_Layer["🗄️ Persistence & Cache (MySQL 8.0+ & Redis)"]
+        MySQL[("🛢️ MySQL 8.0 Database")]
+        Redis[("⚡ Redis Cache & Horizon Queues")]
+    end
+
+    Landing & AdminUI & AdvisorUI & TeacherUI & StudentUI & ParentUI -->|REST / JSON| AuthGuard
+    ReverbWS -->|Live Push Notifications| AdminUI & AdvisorUI & TeacherUI & StudentUI & ParentUI
+
+    AuthGuard --> AuthModule & AdminModule & AcademicModule & AlertModule & CommsModule & ConsentGate
+
+    Backend_Core -->|CRUD / Transactions| MySQL
+    Backend_Core -->|Queues / Cache / Events| Redis
+    Redis -->|Broadcast Events| ReverbWS
+
+    ConsentGate -->|Feature Vectors| ML_Microservice
+    RiskModel & XAI & NLP -->|Risk Scores & Explanations| Backend_Core
+        </pre>
+      </div>
+    </div>
+
+    <!-- Diagram 2: Actor Hierarchy -->
+    <div class="card">
+      <div class="card-header">
+        <div>
+          <h2 class="card-title">2. Actor Hierarchy & Role Access Model</h2>
+          <p class="card-desc">Five Human Roles + Autonomous AI Microservice Actor</p>
+        </div>
+      </div>
+      <div class="diagram-container">
+        <pre class="mermaid">
+graph LR
+    User([👤 User]) --> Login{Authentication & RBAC}
+    Login -->|Role: admin| Admin[👑 System Admin]
+    Login -->|Role: advisor| Advisor[🛡️ Academic Advisor]
+    Login -->|Role: teacher| Teacher[👨‍🏫 Faculty / Teacher]
+    Login -->|Role: student| Student[🎓 Student]
+    Login -->|Role: parent| Parent[👨‍👩‍👧 Parent / Guardian]
+    
+    subgraph Autonomous_Actor["🤖 Autonomous System Actor"]
+        AIEngine["🧠 System / AI Engine (FastAPI)"]
+    end
+    
+    Teacher & Student -->|Logs Data| AIEngine
+    AIEngine -->|Generates Alerts| Advisor & Admin & Parent
+        </pre>
+      </div>
+    </div>
+
+    <!-- Diagram 3: End-to-End Workflow -->
+    <div class="card">
+      <div class="card-header">
+        <div>
+          <h2 class="card-title">3. End-to-End Predictive & Intervention Sequence</h2>
+          <p class="card-desc">Data Ingestion → ML Prediction → Real-time Notification → Counseling Plan → Model Retraining</p>
+        </div>
+      </div>
+      <div class="diagram-container">
+        <pre class="mermaid">
+sequenceDiagram
+    autonumber
+    actor Teacher as 👨‍🏫 Teacher
+    actor Student as 🎓 Student
+    participant Laravel as ⚙️ Laravel API & MySQL
+    participant AI as 🧠 Python AI / ML Service
+    participant Reverb as 📡 Reverb WebSockets
+    actor Advisor as 🛡️ Academic Advisor
+    actor Parent as 👨‍👩‍👧 Parent / Guardian
+
+    Teacher->>Laravel: POST /academic/attendances (Logs absence/lateness)
+    Teacher->>Laravel: POST /academic/grades (Submits midterm scores)
+    Student->>Laravel: POST /consent (Submits wellbeing survey)
+
+    Laravel->>AI: POST /predict & /explain (Sends normalized features)
+    AI-->>Laravel: Returns Risk Score (88%), Tier (High), SHAP Factors
+
+    Laravel->>Laravel: Evaluates Risk vs Institution Threshold
+    Laravel->>Reverb: Broadcasts .new_alert on private channels
+    Reverb-->>Advisor: 🔔 Live At-Risk Notification on Dashboard
+    Reverb-->>Parent: 📲 SMS / Push Notification: Grade/Attendance Alert
+
+    Advisor->>Laravel: GET /academic/students/360 (Views SHAP Factors)
+    Advisor->>Laravel: POST /academic/recommendations (Schedules Tutoring)
+    Laravel-->>Student: 📅 Adds Tutoring Milestone to Student Dashboard
+    Laravel-->>Parent: ✉️ Dispatches Action Plan to Parent Portal
+
+    Teacher->>Laravel: POST /academic/grades (Post-intervention score logged)
+    Laravel->>AI: POST /retrain (Updates model weights with outcome success)
+        </pre>
+      </div>
+    </div>
+
+    <footer>
+      <p>&copy; 2026 Student Behavior Analysis (SBA) Platform. All rights reserved.</p>
+    </footer>
+  </div>
+
+  <script>
+    mermaid.initialize({
+      startOnLoad: true,
+      theme: 'dark',
+      securityLevel: 'loose',
+      themeVariables: {
+        darkMode: true,
+        background: '#111827',
+        primaryColor: '#3b82f6',
+        primaryTextColor: '#f3f4f6',
+        primaryBorderColor: '#60a5fa',
+        lineColor: '#64748b',
+        secondaryColor: '#1e293b',
+        tertiaryColor: '#0f172a'
+      }
+    });
+  </script>
+</body>
+</html>

@@ -11,7 +11,7 @@ This project has **six actors**: System Admin, Teacher/Faculty, Academic Advisor
 ```
 React (SPA/PWA)  <-->  Laravel API (PHP)  <-->  Python ML Service (FastAPI)
                               |                        |
-                          MySQL/Postgres          Model store (S3/MLflow)
+                           MySQL 8.0+             Model store (S3/MLflow)
                               |
                         Redis (cache/queue/broadcast)
 ```
@@ -24,17 +24,17 @@ Laravel never re-implements ML logic; it sends feature data to the Python servic
 |---|---|
 | Framework | Laravel 11 (PHP 8.3) |
 | Auth | Laravel Sanctum (SPA token auth) + Spatie `laravel-permission` for RBAC (5 roles) |
-| Database | PostgreSQL (or MySQL 8) |
+| Database | **MySQL 8.0+** (InnoDB, utf8mb4_unicode_ci) |
 | Cache / Queue / Broadcast | Redis + Laravel Horizon |
 | Real-time | Laravel Reverb or Pusher (WebSockets) for live alerts |
 | Audit logging | Spatie `laravel-activitylog` |
-| Backups | Spatie `laravel-backup` |
+| Backups | Spatie `laravel-backup` (MySQL dump) |
 | API docs | Scramble or L5-Swagger (OpenAPI) — needed for the external researcher API |
 | File exports | `barryvdh/laravel-dompdf` (PDF), `maatwebsite/excel` (Excel) |
 | **ML / AI service (Python)** | FastAPI, scikit-learn / XGBoost / LightGBM, SHAP (explainability), spaCy or a transformer sentiment model (NLP), pandas/numpy, MLflow (model versioning + drift tracking) |
 | ML service task runner | Celery + Redis, or FastAPI `BackgroundTasks` for retraining jobs |
 | Monitoring | Prometheus + Grafana (explicit requirement) |
-| Containerization | Docker Compose (php-fpm, nginx, python-ml, redis, postgres, worker, scheduler) |
+| Containerization | Docker Compose (php-fpm, nginx, python-ml, redis, mysql, worker, scheduler) |
 | CI/CD | GitHub Actions |
 
 ## 3. Phased Plan

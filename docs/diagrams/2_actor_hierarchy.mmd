@@ -1,0 +1,14 @@
+graph LR
+    User([👤 User]) --> Login{Authentication & RBAC}
+    Login -->|Role: admin| Admin[👑 System Admin]
+    Login -->|Role: advisor| Advisor[🛡️ Academic Advisor]
+    Login -->|Role: teacher| Teacher[👨‍🏫 Faculty / Teacher]
+    Login -->|Role: student| Student[🎓 Student]
+    Login -->|Role: parent| Parent[👨‍👩‍👧 Parent / Guardian]
+    
+    subgraph Autonomous_Actor["🤖 Autonomous System Actor"]
+        AIEngine["🧠 System / AI Engine (FastAPI)"]
+    end
+    
+    Teacher & Student -->|Logs Data| AIEngine
+    AIEngine -->|Generates Alerts| Advisor & Admin & Parent

@@ -54,6 +54,52 @@ class User extends Authenticatable
         return $this->belongsTo(Institution::class);
     }
 
+    public function managedInstitutions()
+    {
+        return $this->belongsToMany(Institution::class, 'institution_admins')->withTimestamps();
+    }
+
+    public function isAdmin(): bool
+    {
+        $this->loadMissing('roles');
+
+        return $this->roles->contains(fn ($role) => strcasecmp($role->name, 'admin') === 0);
+    }
+
+    /**
+     * Institutions this admin may manage.
+     * Pivot rows are the source of truth. A primary institution_id is used
+     * only until the first explicit assignment is stored.
+     *
+     * @return array<int>
+     */
+    public function managedInstitutionIds(): array
+    {
+        if (!$this->isAdmin()) {
+            return $this->institution_id ? [(int) $this->institution_id] : [];
+        }
+
+        $ids = $this->managedInstitutions()
+            ->pluck('institutions.id')
+            ->map(fn ($id) => (int) $id)
+            ->all();
+
+        if ($ids === [] && $this->institution_id) {
+            return [(int) $this->institution_id];
+        }
+
+        return array_values(array_unique($ids));
+    }
+
+    public function managesInstitution(int|string|null $institutionId): bool
+    {
+        if ($institutionId === null || $institutionId === '') {
+            return false;
+        }
+
+        return in_array((int) $institutionId, $this->managedInstitutionIds(), true);
+    }
+
     public function college()
     {
         return $this->belongsTo(College::class);

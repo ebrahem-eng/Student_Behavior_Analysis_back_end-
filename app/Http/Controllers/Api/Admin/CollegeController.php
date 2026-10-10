@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\College;
 use App\Http\Resources\CollegeResource;
+use App\Support\AdminScope;
 use Illuminate\Http\Request;
 
 class CollegeController extends Controller
@@ -12,6 +13,14 @@ class CollegeController extends Controller
     public function index(Request $request)
     {
         $query = College::with(['institution'])->withCount('users');
+        $managedIds = AdminScope::managedIds($request->user());
+
+        if (is_array($managedIds)) {
+            if ($request->filled('institution_id')) {
+                AdminScope::assert($request->user(), $request->input('institution_id'));
+            }
+            $query->whereIn('institution_id', $managedIds !== [] ? $managedIds : [0]);
+        }
 
         if ($request->filled('institution_id')) {
             $query->where('institution_id', $request->input('institution_id'));
@@ -48,6 +57,8 @@ class CollegeController extends Controller
             $validated['dean_name'] = $validated['supervisor_name'];
         }
 
+        AdminScope::assert($request->user(), $validated['institution_id']);
+
         $college = College::create([
             'institution_id' => $validated['institution_id'],
             'name' => $validated['name'],
@@ -59,13 +70,16 @@ class CollegeController extends Controller
         return new CollegeResource($college->load('institution'));
     }
 
-    public function show(College $college)
+    public function show(Request $request, College $college)
     {
+        AdminScope::assert($request->user(), $college->institution_id);
+
         return new CollegeResource($college->load('institution')->loadCount('users'));
     }
 
     public function update(Request $request, College $college)
     {
+        AdminScope::assert($request->user(), $college->institution_id);
         $validated = $request->validate([
             'institution_id' => 'sometimes|exists:institutions,id',
             'name' => 'sometimes|string|max:255',
@@ -79,13 +93,19 @@ class CollegeController extends Controller
             $validated['dean_name'] = $validated['supervisor_name'];
         }
 
+        if (array_key_exists('institution_id', $validated)) {
+            AdminScope::assert($request->user(), $validated['institution_id']);
+        }
+
         $college->update($validated);
 
         return new CollegeResource($college->load('institution'));
     }
 
-    public function destroy(College $college)
+    public function destroy(Request $request, College $college)
     {
+        AdminScope::assert($request->user(), $college->institution_id);
+
         $college->delete();
         return response()->noContent();
     }

@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Institution;
 use App\Http\Resources\InstitutionResource;
+use App\Support\AdminScope;
 use Illuminate\Http\Request;
 
 class InstitutionController extends Controller
@@ -13,8 +14,11 @@ class InstitutionController extends Controller
     {
         $user = $request->user();
         $query = Institution::with(['colleges']);
+        $managedIds = AdminScope::managedIds($user);
 
-        if ($request->boolean('my_affiliations') && $user) {
+        if (is_array($managedIds)) {
+            $query->whereIn('id', $managedIds !== [] ? $managedIds : [0]);
+        } elseif ($request->boolean('my_affiliations') && $user) {
             $query->where(function ($q) use ($user) {
                 if ($user->institution_id) {
                     $q->where('id', $user->institution_id);
@@ -41,17 +45,22 @@ class InstitutionController extends Controller
         ]);
 
         $institution = Institution::create($validated);
+        AdminScope::attachCreatedInstitution($request->user(), $institution->id);
 
         return new InstitutionResource($institution->load('colleges'));
     }
 
-    public function show(Institution $institution)
+    public function show(Request $request, Institution $institution)
     {
+        AdminScope::assert($request->user(), $institution->id);
+
         return new InstitutionResource($institution->load('colleges'));
     }
 
     public function update(Request $request, Institution $institution)
     {
+        AdminScope::assert($request->user(), $institution->id);
+
         $validated = $request->validate([
             'name' => 'sometimes|string|max:255',
             'type' => 'sometimes|in:school,university',
@@ -63,8 +72,10 @@ class InstitutionController extends Controller
         return new InstitutionResource($institution->load('colleges'));
     }
 
-    public function destroy(Institution $institution)
+    public function destroy(Request $request, Institution $institution)
     {
+        AdminScope::assert($request->user(), $institution->id);
+
         $institution->delete();
         return response()->noContent();
     }

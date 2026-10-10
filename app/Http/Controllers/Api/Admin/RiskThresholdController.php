@@ -4,13 +4,21 @@ namespace App\Http\Controllers\Api\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\RiskThreshold;
 use App\Http\Resources\RiskThresholdResource;
+use App\Support\AdminScope;
 use Illuminate\Http\Request;
 
 class RiskThresholdController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        return RiskThresholdResource::collection(RiskThreshold::all());
+        $query = RiskThreshold::query();
+        $managedIds = AdminScope::managedIds($request->user());
+
+        if (is_array($managedIds)) {
+            $query->whereIn('institution_id', $managedIds !== [] ? $managedIds : [0]);
+        }
+
+        return RiskThresholdResource::collection($query->get());
     }
 
     public function store(Request $request)
@@ -23,17 +31,22 @@ class RiskThresholdController extends Controller
             'requires_action' => 'boolean',
         ]);
 
+        AdminScope::assert($request->user(), $validated['institution_id']);
+
         $threshold = RiskThreshold::create($validated);
         return new RiskThresholdResource($threshold);
     }
 
-    public function show(RiskThreshold $riskThreshold)
+    public function show(Request $request, RiskThreshold $riskThreshold)
     {
+        AdminScope::assert($request->user(), $riskThreshold->institution_id);
+
         return new RiskThresholdResource($riskThreshold);
     }
 
     public function update(Request $request, RiskThreshold $riskThreshold)
     {
+        AdminScope::assert($request->user(), $riskThreshold->institution_id);
         $validated = $request->validate([
             'level' => 'in:low,medium,high',
             'min_score' => 'numeric|min:0|max:100',
@@ -45,8 +58,10 @@ class RiskThresholdController extends Controller
         return new RiskThresholdResource($riskThreshold);
     }
 
-    public function destroy(RiskThreshold $riskThreshold)
+    public function destroy(Request $request, RiskThreshold $riskThreshold)
     {
+        AdminScope::assert($request->user(), $riskThreshold->institution_id);
+
         $riskThreshold->delete();
         return response()->noContent();
     }

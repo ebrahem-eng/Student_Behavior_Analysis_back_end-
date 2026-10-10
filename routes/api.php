@@ -32,7 +32,7 @@ Route::prefix('auth')->group(function () {
 
 Route::middleware(['auth:sanctum'])->group(function () {
     Route::get('/user', function (Request $request) {
-        return new UserResource($request->user()->load(['roles', 'institution', 'college']));
+        return new UserResource($request->user()->load(['roles', 'institution', 'college', 'managedInstitutions']));
     });
 
     Route::prefix('auth')->group(function () {

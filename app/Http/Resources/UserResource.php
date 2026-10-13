@@ -30,6 +30,18 @@ class UserResource extends JsonResource
             'phone' => $this->phone,
             'national_id' => $this->national_id,
             'avatar_url' => $this->avatar_url,
+            'managed_institutions' => $this->whenLoaded('managedInstitutions', function () {
+                return $this->managedInstitutions->map(fn ($institution) => [
+                    'id' => $institution->id,
+                    'name' => $institution->name,
+                    'type' => $institution->type,
+                    'address' => $institution->address,
+                ])->values();
+            }),
+            'institution_ids' => $this->when(
+                $this->relationLoaded('managedInstitutions'),
+                fn () => $this->managedInstitutions->pluck('id')->values()
+            ),
             'roles' => $this->relationLoaded('roles') 
                 ? $this->roles->pluck('name') 
                 : $this->getRoleNames(),

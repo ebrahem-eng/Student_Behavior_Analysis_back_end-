@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\ApiKey;
 use App\Http\Resources\ApiKeyResource;
+use App\Support\AdminScope;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -15,8 +16,14 @@ class ApiKeyController extends Controller
      */
     public function index(Request $request)
     {
-        $keys = ApiKey::with(['user', 'institution'])->latest()->get();
-        return ApiKeyResource::collection($keys);
+        $query = ApiKey::with(['user', 'institution'])->latest();
+        $managedIds = AdminScope::managedIds($request->user());
+
+        if (is_array($managedIds)) {
+            $query->whereIn('institution_id', $managedIds !== [] ? $managedIds : [0]);
+        }
+
+        return ApiKeyResource::collection($query->get());
     }
 
     /**
@@ -32,11 +39,17 @@ class ApiKeyController extends Controller
             'expires_at' => 'nullable|date|after:now',
         ]);
 
+        $institutionId = $validated['institution_id'] ?? Auth::user()->institution_id;
+        if (Auth::user()?->isAdmin() && !$institutionId) {
+            $institutionId = Auth::user()->managedInstitutionIds()[0] ?? null;
+        }
+        AdminScope::assert(Auth::user(), $institutionId);
+
         $keyData = ApiKey::generateKey();
 
         $apiKey = ApiKey::create([
             'user_id' => Auth::id(),
-            'institution_id' => $validated['institution_id'] ?? Auth::user()->institution_id,
+            'institution_id' => $institutionId,
             'name' => $validated['name'],
             'key_prefix' => $keyData['prefix'],
             'key_hash' => $keyData['hash'],
@@ -56,8 +69,10 @@ class ApiKeyController extends Controller
     /**
      * Show API key metadata.
      */
-    public function show(ApiKey $apiKey)
+    public function show(Request $request, ApiKey $apiKey)
     {
+        AdminScope::assert($request->user(), $apiKey->institution_id);
+
         return new ApiKeyResource($apiKey);
     }
 
@@ -66,6 +81,8 @@ class ApiKeyController extends Controller
      */
     public function toggle(Request $request, ApiKey $apiKey)
     {
+        AdminScope::assert($request->user(), $apiKey->institution_id);
+
         $apiKey->update(['is_active' => !$apiKey->is_active]);
         return new ApiKeyResource($apiKey);
     }
@@ -73,8 +90,10 @@ class ApiKeyController extends Controller
     /**
      * Revoke / delete an API key.
      */
-    public function destroy(ApiKey $apiKey)
+    public function destroy(Request $request, ApiKey $apiKey)
     {
+        AdminScope::assert($request->user(), $apiKey->institution_id);
+
         $apiKey->delete();
         return response()->noContent();
     }

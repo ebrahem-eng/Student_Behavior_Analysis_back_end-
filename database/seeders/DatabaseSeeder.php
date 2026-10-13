@@ -58,6 +58,7 @@ class DatabaseSeeder extends Seeder
             'national_id' => '0102030405',
         ]);
         $admin->assignRole('Admin');
+        $admin->managedInstitutions()->sync([$uni->id, $school->id]);
 
         $teacher = User::create([
             'name' => 'Dr. Omar Farooq',
